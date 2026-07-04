@@ -1,0 +1,6 @@
+node_modules/
+dist/
+# Copied from the three-globe package by scripts/copy-textures.mjs (postinstall)
+public/textures/
+*.log
+.DS_Store

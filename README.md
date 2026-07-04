@@ -1,25 +1,79 @@
-# CODING AGENTS: READ THIS FIRST
+# Earth's Echoes — A Living Atlas
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+A cinematic atlas of vanished and vanishing life. Sixteen species pinned to a
+3D globe, a Time Machine that scrubs 12,000 years of extinction history, and a
+museum tour that flies you between them — wrapped in a dark, glassmorphic,
+sound-designed interface.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+Built with **React + Vite + Tailwind CSS 4**, `globe.gl` (atlas globe) and
+`three` (landing globe). All UI audio is synthesized at runtime with the Web
+Audio API — no audio assets. Globe textures ship from the `three-globe`
+package, so the app has no runtime CDN dependencies.
 
-## What you should do — IMPORTANT
+## Run it
 
-**Read the chat transcripts first.** There are 1 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+```bash
+npm install     # also copies globe textures into public/textures
+npm run dev     # http://localhost:5173
+npm run build   # production build in dist/
+npm run preview # serve the production build
+```
 
-**Find the primary design file under `project/` and read it top to bottom.** The chat transcripts will tell you which file the user was last iterating on. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+## Pages
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+- **`/` — Landing.** Wireframe emerald globe with live HUD telemetry,
+  per-letter hero reveal, memorial marquee of the lost, bento species
+  spotlights with hover tilt, scroll-triggered stat counters.
+- **`/atlas` — The atlas.** Photoreal globe with species pins, habitat
+  filtering, and a cinematic intro overlay (skipped when arriving from the
+  landing page via `?from=landing`). Deep-link any species with a hash:
+  `/atlas#vaquita`.
 
-## About the design files
+## Atlas features
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+- **Time Machine** — scrub from 10,000 BCE to the present; extinct species
+  vanish from the globe past their extinction year, and the species index
+  strikes them through. Play button animates through time.
+- **Museum Tour** — auto-flying camera with cinematic captions and letterbox.
+- **Species takeover** — full-screen profile with field notes, threats,
+  population dots (one per living individual), how-to-help actions, archive
+  footage, postcard PNG export, bookmarking, and share links. Navigate with
+  ← → , close with Esc.
+- **⌘K command palette** — diacritic-insensitive species search plus quick
+  actions.
+- **Compare mode** — two species side-by-side.
+- **Extinction Ledger** — stats dashboard with a "lost since you were born"
+  counter.
+- **Guess-the-year quiz** — five rounds on the Time Machine slider.
+- **Extinction clock** — counts down to the next estimated global species
+  loss (~every 9.6 minutes, UNEP upper-bound estimate).
+- **Ambient soundscapes** — generative ocean / forest / tundra / wetland
+  audio that crossfades with the habitat theme, plus synthesized hover/click
+  sounds with a live waveform toggle.
+- **Tweaks panel** — theme (cinematic / editorial / HUD), globe style
+  (photoreal / stylized / wireframe), pin style, pin density, threat lens
+  with legend, accent override. Persists in `localStorage`.
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+Reduced-motion preferences are respected throughout, and the layout is
+responsive from phones (390px) to wide desktops.
 
-## Bundle contents
+## Project layout
 
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `Earth Echo's` project files (HTML prototypes, assets, components)
+```
+src/
+  pages/            Landing.jsx, Atlas.jsx
+  components/
+    atlas/          globe, header, time machine, takeover, tour, palette, …
+    landing/        HeroGlobe.jsx
+    icons.jsx       inline SVG icon set
+  data/species.js   16 species + habitats + threat classes
+  lib/              audio synthesis, postcard export, formatting helpers
+  styles/           global + landing stylesheets
+scripts/
+  copy-textures.mjs copies earth textures out of node_modules (postinstall)
+```
+
+## Design provenance
+
+This app implements a Claude Design handoff. The original prototype and chat
+transcripts live in [`design/`](design/) for reference.

@@ -1,0 +1,28 @@
+{
+  "name": "earths-echoes",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Earth's Echoes — a living atlas of vanished & vanishing life",
+  "scripts": {
+    "predev": "node scripts/copy-textures.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/copy-textures.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "postinstall": "node scripts/copy-textures.mjs"
+  },
+  "dependencies": {
+    "globe.gl": "^2.41.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.6.0",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.7",
+    "@vitejs/plugin-react": "^4.4.1",
+    "tailwindcss": "^4.1.7",
+    "vite": "^6.3.5"
+  }
+}
