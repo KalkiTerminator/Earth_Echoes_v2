@@ -78,6 +78,11 @@ export default function Takeover({ species, onClose, onPrev, onNext, onShare, bo
             <img src={species.imageUrl} alt={species.name}
               className="absolute inset-0 w-full h-full object-cover"
               onError={(e) => {
+                if (!e.target.dataset.retried && species.imageRemote) {
+                  e.target.dataset.retried = "1";
+                  e.target.src = species.imageRemote;
+                  return;
+                }
                 e.target.style.display = "none";
                 e.target.parentElement.style.background = `linear-gradient(135deg, rgb(${accentRgb} / 0.3), rgb(0 0 0 / 0.6))`;
               }} />

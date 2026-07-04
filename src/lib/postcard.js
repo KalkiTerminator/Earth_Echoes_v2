@@ -26,14 +26,19 @@ export async function makePostcard(species, accent) {
   x.fillStyle = "#07070c";
   x.fillRect(0, 0, W, H);
 
+  const loadImage = (src) => new Promise((res, rej) => {
+    const i = new Image();
+    i.crossOrigin = "anonymous";
+    i.onload = () => res(i);
+    i.onerror = rej;
+    i.src = src;
+  });
+
   let imgOk = false;
   try {
-    const img = await new Promise((res, rej) => {
-      const i = new Image();
-      i.crossOrigin = "anonymous";
-      i.onload = () => res(i);
-      i.onerror = rej;
-      i.src = species.imageUrl;
+    const img = await loadImage(species.imageUrl).catch(() => {
+      if (!species.imageRemote) throw new Error("no image");
+      return loadImage(species.imageRemote);
     });
     const tw = 560, th = H;
     const sc = Math.max(tw / img.width, th / img.height);

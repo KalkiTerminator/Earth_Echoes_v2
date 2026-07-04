@@ -5,12 +5,14 @@
   "type": "module",
   "description": "Earth's Echoes — a living atlas of vanished & vanishing life",
   "scripts": {
-    "predev": "node scripts/copy-textures.mjs",
+    "prepare-assets": "node scripts/copy-textures.mjs && node scripts/build-data.mjs",
+    "predev": "npm run prepare-assets",
     "dev": "vite",
-    "prebuild": "node scripts/copy-textures.mjs",
+    "prebuild": "npm run prepare-assets",
     "build": "vite build",
     "preview": "vite preview",
-    "postinstall": "node scripts/copy-textures.mjs"
+    "fetch-images": "node scripts/fetch-images.mjs",
+    "postinstall": "npm run prepare-assets"
   },
   "dependencies": {
     "globe.gl": "^2.41.4",

@@ -128,6 +128,18 @@ export default function GlobeView({
     const g = gRef.current;
     if (!g) return;
 
+    // Local image first; retry once against the remote source before
+    // degrading to the name chip / blank background.
+    const withRemoteRetry = (img, d, onFail) => {
+      img.onerror = () => {
+        if (!img.dataset.retried && d.imageRemote) {
+          img.dataset.retried = "1";
+          img.src = d.imageRemote;
+        } else {
+          onFail();
+        }
+      };
+    };
     const wire = (el, d) => {
       el.onmouseenter = () => { eeSound.hover(); callbacksRef.current.onHover?.(d); };
       el.onmouseleave = () => callbacksRef.current.onHover?.(null);
@@ -170,7 +182,7 @@ export default function GlobeView({
           const img = document.createElement("img");
           img.src = d.imageUrl;
           img.alt = "";
-          img.onerror = () => { img.style.background = "#222"; img.removeAttribute("src"); };
+          withRemoteRetry(img, d, () => { img.style.background = "#222"; img.removeAttribute("src"); });
           const lbl = document.createElement("span");
           lbl.className = "lbl";
           lbl.textContent = d.name;
@@ -189,13 +201,13 @@ export default function GlobeView({
         const img = document.createElement("img");
         img.src = d.imageUrl;
         img.alt = d.name;
-        img.onerror = () => {
+        withRemoteRetry(img, d, () => {
           img.remove();
           const fallback = document.createElement("div");
           fallback.style.cssText = "font-family:'IBM Plex Mono',monospace;font-size:9px;color:#fff;text-align:center;line-height:1.1;padding:2px;letter-spacing:0.05em";
           fallback.textContent = d.name.split(" ")[0].slice(0, 6);
           el.appendChild(fallback);
-        };
+        });
         el.appendChild(img);
         el.appendChild(makeTooltip(d, pinColor));
         wire(el, d);

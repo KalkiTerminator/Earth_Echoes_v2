@@ -38,6 +38,12 @@ Flows worth driving:
   (wireframe globe style + threat lens are good visual probes).
 - Mobile: 390×844 viewport; header collapses, takeover becomes a single
   scrolling column.
+- Data layer (`src/data/atlas.js`): normal path fetches `/data/species.json`
+  once before pages render; `route.abort()` on it → console warns
+  `[atlas] using bundled dataset` and the app renders identically from the
+  bundled fallback; a malformed fulfilled response must trigger the same
+  fallback via validation. `VITE_DATA_URL=<url> npm run build` must inline
+  the override (grep dist/assets for it).
 
 ## Environment gotchas (not app bugs)
 

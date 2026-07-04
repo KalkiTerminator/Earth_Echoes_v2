@@ -13,11 +13,41 @@ package, so the app has no runtime CDN dependencies.
 ## Run it
 
 ```bash
-npm install     # also copies globe textures into public/textures
-npm run dev     # http://localhost:5173
-npm run build   # production build in dist/
-npm run preview # serve the production build
+npm install            # also prepares textures + data JSON (postinstall)
+npm run fetch-images   # one-time: mirror species photos into public/images
+npm run dev            # http://localhost:5173
+npm run build          # production build in dist/
+npm run preview        # serve the production build
 ```
+
+## Deploy (Vercel)
+
+1. Push this repo to GitHub.
+2. [vercel.com](https://vercel.com) → **Add New… → Project** → import the
+   repo. Vercel auto-detects Vite (`npm run build` → `dist/`); `vercel.json`
+   in the repo supplies SPA rewrites, caching, and security headers.
+3. **Deploy.** Every future `git push` auto-deploys. The free tier serves a
+   static CDN site to thousands of users without further work.
+
+Custom domain later: Vercel project → Settings → Domains.
+
+## Data layer (Phase-2 seam)
+
+At startup the app fetches its dataset from
+`VITE_DATA_URL` (default: `/data/species.json`, generated from
+`src/data/species.js` at build time). The document is validated and, on any
+failure, the app falls back to the bundled dataset — the atlas can't go blank
+because a data source is down.
+
+**Phase 2** (developer side feeding species/music/files): stand up an API on
+Railway that serves the same document shape, then set `VITE_DATA_URL` in
+Vercel's environment settings. No frontend code changes. Full blueprint:
+[`docs/PHASE2.md`](docs/PHASE2.md).
+
+Species photos are self-hosted from `public/images/species/` (run
+`npm run fetch-images` once to mirror them from Wikimedia); if a local image
+is missing, the app automatically retries the remote source before showing
+its designed fallback.
 
 ## Pages
 

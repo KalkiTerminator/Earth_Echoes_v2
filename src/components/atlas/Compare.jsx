@@ -35,7 +35,14 @@ function CompareColumn({ sel, setSel, other, species }) {
     <div className="flex flex-col min-h-0 overflow-y-auto ee-scroll pr-1">
       <div className="relative h-40 rounded-xl overflow-hidden border border-white/10 shrink-0 bg-white/[0.03]">
         <img src={sel.imageUrl} alt={sel.name} className="w-full h-full object-cover"
-          onError={(e) => { e.target.style.display = "none"; }} />
+          onError={(e) => {
+            if (!e.target.dataset.retried && sel.imageRemote) {
+              e.target.dataset.retried = "1";
+              e.target.src = sel.imageRemote;
+              return;
+            }
+            e.target.style.display = "none";
+          }} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 50%, rgba(3,4,8,0.8))" }}></div>
         <button onClick={() => { eeSound.click(); setSel(null); }}
           className="absolute top-2 right-2 mono text-[9px] uppercase tracking-[0.2em] px-2 py-1 rounded-full bg-black/60 border border-white/15 text-white/70 hover:text-white">

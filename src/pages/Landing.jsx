@@ -12,16 +12,25 @@ const CARD_IMAGES = {
   thylacine: "https://lh3.googleusercontent.com/aida-public/AB6AXuDE-MPUOX62IEDlKbOCdb8i7J9ZAs6QVEUTY2qeAyo5tWE6CaCzVTUQqBX2HeiBvwzGKyoYfrZQVx_CBcejBFRkUweRRkfnfQD2ILd_gumTh3OkaqcZC31kHXmsE1DTgKkovWGId9vZd4JQ0KT_HBVpDAewp-hgunpcqYU24vAtFJ_mAcB5VBB9Ii_N8rVGqQNoTQFwdbzfcALO5Y4tDXNv6OwEKqmFBGoXBMpMyjLsGm3mPd0D829m",
 };
 
-// Prefer the design's art-directed image; fall back to the species' archive photo if it 404s.
+// Prefer the design's art-directed image; fall back to the species' archive
+// photo (local first, then remote) if it 404s.
 function useCardImage(id) {
   const primary = CARD_IMAGES[id];
-  const fallback = SPECIES.find((s) => s.id === id)?.imageUrl;
+  const sp = SPECIES.find((s) => s.id === id);
   const [url, setUrl] = useState(primary);
   useEffect(() => {
-    const img = new Image();
-    img.onerror = () => setUrl(fallback);
-    img.src = primary;
-  }, [primary, fallback]);
+    const candidates = [primary, sp?.imageUrl, sp?.imageRemote].filter(Boolean);
+    let cancelled = false;
+    const tryNext = (i) => {
+      if (cancelled || i >= candidates.length) return;
+      const img = new Image();
+      img.onload = () => { if (!cancelled) setUrl(candidates[i]); };
+      img.onerror = () => tryNext(i + 1);
+      img.src = candidates[i];
+    };
+    tryNext(0);
+    return () => { cancelled = true; };
+  }, [id]);
   return url;
 }
 
