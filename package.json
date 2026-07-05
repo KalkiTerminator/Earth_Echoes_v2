@@ -15,6 +15,7 @@
     "postinstall": "npm run prepare-assets"
   },
   "dependencies": {
+    "better-auth": "^1.6.23",
     "globe.gl": "^2.41.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

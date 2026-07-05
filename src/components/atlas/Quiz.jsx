@@ -14,7 +14,7 @@ function quizRank(total) {
   return "Fresh Recruit";
 }
 
-export default function Quiz({ species, year, setYear, onExit, hidden, accent }) {
+export default function Quiz({ species, year, setYear, onExit, hidden, accent, onComplete }) {
   const [pool, setPool] = useState(() => shuffledExtinct(species));
   const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState("guess"); // guess | reveal | done
@@ -37,7 +37,11 @@ export default function Quiz({ species, year, setYear, onExit, hidden, accent })
   const next = () => {
     eeSound.click();
     if (idx + 1 < pool.length) { setIdx(idx + 1); setPhase("guess"); }
-    else setPhase("done");
+    else {
+      setPhase("done");
+      // scores holds every round's points at this point; persist the run.
+      onComplete?.(scores.reduce((a, b) => a + b, 0), scores);
+    }
   };
   const playAgain = () => {
     eeSound.panelOpen();

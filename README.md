@@ -46,10 +46,34 @@ At startup the app fetches its dataset from
 failure, the app falls back to the bundled dataset — the atlas can't go blank
 because a data source is down.
 
-**Phase 2** (developer side feeding species/music/files): stand up an API on
-Railway that serves the same document shape, then set `VITE_DATA_URL` in
-Vercel's environment settings. No frontend code changes. Full blueprint:
-[`docs/PHASE2.md`](docs/PHASE2.md).
+**Phase 2 is implemented** — a full Node API (Hono + Better Auth + Drizzle +
+Postgres) lives in [`server/`](server/), adding accounts with cross-device
+sync, an admin CMS that publishes species/media to the live atlas without a
+redeploy, and an analytics dashboard. The frontend seam is unchanged: set
+`VITE_DATA_URL` + `VITE_API_URL` and it lights up; leave them unset and the
+app runs standalone on bundled data + `localStorage`, exactly as before.
+Deploy guide: [`docs/DEPLOY-PHASE2.md`](docs/DEPLOY-PHASE2.md); original
+blueprint: [`docs/PHASE2.md`](docs/PHASE2.md).
+
+### Accounts, admin & analytics (server/)
+
+- **Accounts** — email + password (Google-ready) via Better Auth, cookie
+  sessions in Postgres. Signed-in users sync bookmarks, quiz scores, birth
+  year, and tweaks across devices; anonymous users keep working on
+  `localStorage`.
+- **Admin CMS** (`/admin`, role-gated) — edit species, upload images/audio,
+  manage habitats/threats, then **Publish** to push a validated snapshot live
+  within ~60s. A server-side mirror of the frontend validator means a
+  half-edited draft can never reach the atlas.
+- **Analytics** (`/admin/analytics`) — privacy-conscious event pipeline
+  (anonymous id, no IP/UA, DNT-honored, 90-day retention) feeding a dashboard
+  of users, DAU, signups, most-viewed species, and quiz stats.
+
+```bash
+cd server && cp .env.example .env && npm install
+npm run db:seed   # migrate + seed + publish snapshot v1
+npm run dev       # API on http://localhost:8787
+```
 
 Species photos are self-hosted from `public/images/species/` (run
 `npm run fetch-images` once to mirror them from Wikimedia); if a local image
