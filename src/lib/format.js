@@ -21,5 +21,15 @@ export function hexToRgbStr(hex) {
   return `${(n >> 16) & 255} ${(n >> 8) & 255} ${n & 255}`;
 }
 
+// Resolve a root-absolute asset path ("/images/…") against the deploy base,
+// so self-hosted assets keep working when the app is served from a subpath
+// (e.g. GitHub Pages serves it from /<repo>/). No-op when base is "/".
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+export function withBase(path) {
+  if (!BASE || typeof path !== "string") return path;
+  if (!path.startsWith("/") || path.startsWith("//") || path.startsWith(BASE + "/")) return path;
+  return BASE + path;
+}
+
 export const prefersReducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;

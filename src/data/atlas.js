@@ -12,8 +12,9 @@
 // hosting env. No code changes required as long as the endpoint returns
 // { version, species[], habitats{}, threatClasses{} } in this shape.
 import { SPECIES, HABITATS, THREAT_CLASSES } from "./species.js";
+import { withBase } from "../lib/format.js";
 
-const DATA_URL = import.meta.env.VITE_DATA_URL || "/data/species.json";
+const DATA_URL = import.meta.env.VITE_DATA_URL || withBase("/data/species.json");
 
 function validate(doc) {
   if (!doc || typeof doc !== "object") return "not an object";
@@ -57,6 +58,9 @@ export function loadAtlas() {
         // Bundled data remains in place — log and carry on.
         console.warn(`[atlas] using bundled dataset (${e.message})`);
       }
+      // Root-absolute image paths need the deploy base prefixed (subpath
+      // hosts like GitHub Pages); loadAtlas runs once, before pages render.
+      for (const s of SPECIES) s.imageUrl = withBase(s.imageUrl);
       return { species: SPECIES, habitats: HABITATS, threatClasses: THREAT_CLASSES };
     })();
   }
