@@ -2,14 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { SPECIES } from "../data/species.js";
 import { eeSound } from "../lib/audio.js";
-import { prefersReducedMotion } from "../lib/format.js";
+import { prefersReducedMotion, withBase } from "../lib/format.js";
 import HeroGlobe from "../components/landing/HeroGlobe.jsx";
 import "../styles/landing.css";
 
+// Art-directed spotlight images from the design mockups, self-hosted in
+// public/images/cards (the design's original CDN URLs have expired).
 const CARD_IMAGES = {
-  axolotl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDd3vP_CjCxEGrkM3KlXCtjmqBko0IQyWbAr2hU4GPBRBSViQF9HHjMEFDgxA9Eb9OhfZqFdkf1E8RwrX0mb7ZlN8ck5rclNHI8KTZJ4cFx-qlim17wS5gs9AgsbIjMk_tyAwA_SC8SyusqVTsNE9ZGlQxhLyur8ae5zPtE__yjn0yMMU9x42D6SD1kolZBXeui8ZTZO4gDozbGN-u3XoBXSoJ-jyZR8lyb6J1npVFTaGQOMW7Y6PME",
-  dodo: "https://lh3.googleusercontent.com/aida-public/AB6AXuALsNo-FJyvOk9rX8iR6Aq2nCk9ITQ06dlSwp0on-i8dTwxkFYIsIhuUvVNSRFLe2izkIMob5X2-fU-OxOXqVeDj6I1UkIfdQ2f--xPYgIp8rB2dlLaXs-IBJQZwd-Bw1bA3jnhXaJAIGyATg9udQ5L69E_vNzofLLOT0dGuDSvAJZr8vm9IclUTV1JWiyqbe2rRX5BkZeEe1CRCchvyO-qs2mSwM9Y__QeItB0RWEd9W-OoC883h6Q",
-  thylacine: "https://lh3.googleusercontent.com/aida-public/AB6AXuDE-MPUOX62IEDlKbOCdb8i7J9ZAs6QVEUTY2qeAyo5tWE6CaCzVTUQqBX2HeiBvwzGKyoYfrZQVx_CBcejBFRkUweRRkfnfQD2ILd_gumTh3OkaqcZC31kHXmsE1DTgKkovWGId9vZd4JQ0KT_HBVpDAewp-hgunpcqYU24vAtFJ_mAcB5VBB9Ii_N8rVGqQNoTQFwdbzfcALO5Y4tDXNv6OwEKqmFBGoXBMpMyjLsGm3mPd0D829m",
+  axolotl: withBase("/images/cards/axolotl.jpg"),
+  dodo: withBase("/images/cards/dodo.jpg"),
+  thylacine: withBase("/images/cards/thylacine.jpg"),
 };
 
 // Prefer the design's art-directed image; fall back to the species' archive
@@ -124,7 +126,7 @@ function HeroTitle() {
           const delay = d;
           d += 0.045;
           return (
-            <span key={i} className="ch" style={{ animationDelay: delay.toFixed(2) + "s", color: wi === 1 ? "#8fd4c9" : undefined }}>
+            <span key={i} className="ch" style={{ animationDelay: delay.toFixed(2) + "s" }}>
               {ch}
             </span>
           );

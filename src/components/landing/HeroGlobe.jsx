@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { SPECIES } from "../../data/species.js";
-import { prefersReducedMotion } from "../../lib/format.js";
+import { prefersReducedMotion, withBase } from "../../lib/format.js";
 
-// Wireframe emerald globe with hex inner shell, particle atmosphere,
-// pulsing species markers, mouse drift, and HUD telemetry.
+// Solid dark earth with a teal atmospheric rim (per the design mockups),
+// particle atmosphere, pulsing species markers, mouse drift, HUD telemetry.
 export default function HeroGlobe({ hudLatRef, hudLngRef }) {
   const containerRef = useRef(null);
 
@@ -29,17 +29,39 @@ export default function HeroGlobe({ hudLatRef, hudLngRef }) {
     scene.add(globeGroup);
     const R = 100;
 
+    // Solid, near-black textured earth — the mockup's globe is a dark sphere
+    // whose continents read as subtle relief, not a wireframe.
+    const earthTex = new THREE.TextureLoader().load(withBase("/textures/earth-dark.jpg"));
+    earthTex.colorSpace = THREE.SRGBColorSpace;
     const globe = new THREE.Mesh(
       new THREE.SphereGeometry(R, 64, 64),
-      new THREE.MeshPhongMaterial({ color: 0x34d399, wireframe: true, transparent: true, opacity: 0.1 })
+      new THREE.MeshPhongMaterial({ map: earthTex, color: 0x4a545c, shininess: 6 })
     );
     globeGroup.add(globe);
 
-    const hexGlobe = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(R * 0.98, 4),
-      new THREE.MeshBasicMaterial({ color: 0x34d399, wireframe: true, transparent: true, opacity: 0.05 })
+    // Teal atmospheric rim hugging the sphere (classic back-side fresnel glow)
+    const atmosphere = new THREE.Mesh(
+      new THREE.SphereGeometry(R * 1.12, 64, 64),
+      new THREE.ShaderMaterial({
+        vertexShader: `
+          varying vec3 vNormal;
+          void main() {
+            vNormal = normalize(normalMatrix * normal);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }`,
+        fragmentShader: `
+          varying vec3 vNormal;
+          void main() {
+            float intensity = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 3.0);
+            gl_FragColor = vec4(0.20, 0.85, 0.68, 1.0) * intensity * 1.5;
+          }`,
+        side: THREE.BackSide,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        depthWrite: false,
+      })
     );
-    globeGroup.add(hexGlobe);
+    globeGroup.add(atmosphere);
 
     // particles
     const COUNT = 600;
@@ -58,8 +80,8 @@ export default function HeroGlobe({ hudLatRef, hudLngRef }) {
     }));
     globeGroup.add(particles);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-    const pl = new THREE.PointLight(0x34d399, 1.5, 400);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+    const pl = new THREE.PointLight(0x7de8c4, 0.8, 500);
     pl.position.set(150, 150, 150);
     scene.add(pl);
 
@@ -102,7 +124,6 @@ export default function HeroGlobe({ hudLatRef, hudLngRef }) {
       raf = requestAnimationFrame(animate);
       const time = Date.now() * 0.001;
       globeGroup.rotation.y += reduced ? 0.0008 : 0.003;
-      hexGlobe.rotation.y -= 0.0015;
       globeGroup.position.x += (mx * 40 - globeGroup.position.x) * 0.05;
       globeGroup.position.y += (-my * 40 - globeGroup.position.y) * 0.05;
       pointsGroup.children.forEach((p, i) => {
