@@ -3,14 +3,14 @@ import Globe from "globe.gl";
 import * as THREE from "three";
 import { HABITATS, THREAT_CLASSES } from "../../data/species.js";
 import { eeSound } from "../../lib/audio.js";
-import { prefersReducedMotion } from "../../lib/format.js";
+import { prefersReducedMotion, withBase } from "../../lib/format.js";
 
 // Served from public/textures (copied out of the three-globe package at
 // install time) — no runtime CDN dependency.
-const EARTH_BLUE = "/textures/earth-blue-marble.jpg";
-const EARTH_MODERN = "/textures/earth-dark.jpg";
-const EARTH_ANCIENT = "/textures/earth-night.jpg";
-const EARTH_TOPO = "/textures/earth-topology.png";
+const EARTH_BLUE = withBase("/textures/earth-blue-marble.jpg");
+const EARTH_MODERN = withBase("/textures/earth-dark.jpg");
+const EARTH_ANCIENT = withBase("/textures/earth-night.jpg");
+const EARTH_TOPO = withBase("/textures/earth-topology.png");
 
 export default function GlobeView({
   species,

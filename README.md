@@ -20,6 +20,13 @@ npm run build          # production build in dist/
 npm run preview        # serve the production build
 ```
 
+## Live site (GitHub Pages)
+
+The app auto-deploys to **https://kalkiterminator.github.io/Earth_Echoes_v2/**
+on every push to `main` via `.github/workflows/deploy-pages.yml`. The workflow
+mirrors species photos at build time, builds with the `/Earth_Echoes_v2/` base
+path, and publishes `dist/` to GitHub Pages with an SPA fallback.
+
 ## Deploy (Vercel)
 
 1. Push this repo to GitHub.
