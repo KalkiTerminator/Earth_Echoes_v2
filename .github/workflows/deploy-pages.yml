@@ -6,9 +6,6 @@ on:
   push:
     branches:
       - main
-      # Temporary: deploy from the review branch so the site goes live before
-      # the PR merges. Remove this line once the PR is merged.
-      - claude/code-review-r0ozfm
   workflow_dispatch:
 
 permissions:
