@@ -1,5 +1,11 @@
 # Phase 2 — Developer Side & Live Data Feeding
 
+> **Status: implemented.** The API described here lives in [`server/`](../server/)
+> (Hono + Better Auth + Drizzle + Postgres) and adds accounts, cross-device
+> sync, an admin CMS, and analytics on top of this original blueprint. For the
+> concrete deploy steps see [`DEPLOY-PHASE2.md`](DEPLOY-PHASE2.md). This
+> document is kept as the design rationale and API contract.
+
 Target: a developer/admin side where species data, music, and files are fed
 into the system and appear on the live geo atlas — without redeploying the
 frontend.

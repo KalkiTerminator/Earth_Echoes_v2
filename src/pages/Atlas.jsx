@@ -3,6 +3,9 @@ import { useSearchParams } from "react-router-dom";
 import { SPECIES, HABITATS } from "../data/species.js";
 import { eeSound, eeAmbience } from "../lib/audio.js";
 import { hexToRgbStr, MAX_YEAR } from "../lib/format.js";
+import { useAuth } from "../context/AuthContext.jsx";
+import { mergeOnLogin, pushState, saveQuizScore } from "../lib/userState.js";
+import { track } from "../lib/analytics.js";
 import GlobeView from "../components/atlas/GlobeView.jsx";
 import Header from "../components/atlas/Header.jsx";
 import TimeMachine from "../components/atlas/TimeMachine.jsx";
@@ -41,6 +44,7 @@ function loadConfig() {
 
 export default function Atlas() {
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const [config, setConfig] = useState(loadConfig);
   const [filter, setFilter] = useState("all");
   const [year, setYear] = useState(MAX_YEAR);
@@ -62,10 +66,38 @@ export default function Atlas() {
   const [entered, setEntered] = useState(() => searchParams.has("from"));
   const globeRef = useRef(null);
 
-  // Persist
+  // Persist to localStorage (the anonymous source of truth, unchanged).
   useEffect(() => { localStorage.setItem("ee_marks", JSON.stringify(bookmarks)); }, [bookmarks]);
   useEffect(() => { localStorage.setItem("ee_birth", String(birthYear)); }, [birthYear]);
   useEffect(() => { localStorage.setItem("ee_config", JSON.stringify(config)); }, [config]);
+
+  // Cross-device sync: once signed in, merge local ↔ server (bookmarks unioned,
+  // other fields server-wins-if-set), then push subsequent changes. On sign-out
+  // the flag resets so a later login re-merges. Anonymous users never sync.
+  const syncedRef = useRef(false);
+  useEffect(() => {
+    if (!user) { syncedRef.current = false; return; }
+    if (syncedRef.current) return;
+    let cancelled = false;
+    (async () => {
+      const merged = await mergeOnLogin({ bookmarks, birthYear, config, soundOn });
+      if (cancelled) return;
+      syncedRef.current = true;
+      if (merged) {
+        if (Array.isArray(merged.bookmarks)) setBookmarks(merged.bookmarks);
+        if (typeof merged.birthYear === "number") setBirthYear(merged.birthYear);
+        if (merged.config) setConfig((c) => ({ ...c, ...merged.config }));
+        if (typeof merged.soundOn === "boolean") { setSoundOn(merged.soundOn); eeSound.setEnabled(merged.soundOn); }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  // Push changes to the server once synced (debounced inside pushState).
+  useEffect(() => { if (syncedRef.current) pushState({ bookmarks }); }, [bookmarks]);
+  useEffect(() => { if (syncedRef.current) pushState({ birthYear }); }, [birthYear]);
+  useEffect(() => { if (syncedRef.current) pushState({ config }); }, [config]);
+  useEffect(() => { if (syncedRef.current) pushState({ soundOn }); }, [soundOn]);
 
   const allSpecies = SPECIES;
   const visibleSpecies = useMemo(() => {
@@ -101,6 +133,7 @@ export default function Atlas() {
 
   const onSelect = useCallback((s) => {
     setSelectedId(s.id);
+    track("species_view", { species: s.id });
     const g = globeRef.current;
     if (g) {
       g.controls().autoRotate = false;
@@ -120,7 +153,11 @@ export default function Atlas() {
   }, [selectedId, onSelect]);
 
   const onBookmark = useCallback((id) => {
-    setBookmarks((b) => (b.includes(id) ? b.filter((x) => x !== id) : [...b, id]));
+    setBookmarks((b) => {
+      const has = b.includes(id);
+      track(has ? "bookmark_remove" : "bookmark_add", { species: id });
+      return has ? b.filter((x) => x !== id) : [...b, id];
+    });
   }, []);
 
   // Hash-based deep link (#species-id) on load
@@ -154,6 +191,12 @@ export default function Atlas() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  // Analytics: page_view on entry, and feature-usage on open.
+  useEffect(() => { if (entered) track("page_view", { page: "atlas" }); }, [entered]);
+  useEffect(() => { if (tourActive) track("tour_start"); }, [tourActive]);
+  useEffect(() => { if (compareOpen) track("compare_open"); }, [compareOpen]);
+  useEffect(() => { if (quizActive) track("quiz_start"); }, [quizActive]);
 
   // Ambient soundscape lifecycle
   useEffect(() => { if (entered) eeAmbience.start(habitatTheme); }, [entered]);
@@ -255,6 +298,7 @@ export default function Atlas() {
       {quizActive && (
         <Quiz species={allSpecies} year={year} setYear={setYear}
           hidden={!!selected || tourActive} accent={accent}
+          onComplete={(total, rounds) => { track("quiz_complete", { total }); saveQuizScore(total, rounds); }}
           onExit={() => setQuizActive(false)} />
       )}
     </div>

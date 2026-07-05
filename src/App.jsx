@@ -1,12 +1,15 @@
 import React, { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { loadAtlas } from "./data/atlas.js";
+import { AuthProvider } from "./context/AuthContext.jsx";
 
 // Pages render synchronously from the atlas dataset, so data loading is
 // gated here alongside the code-split import — one Suspense covers both.
 const withAtlas = (importer) => lazy(() => Promise.all([importer(), loadAtlas()]).then(([m]) => m));
 const Landing = withAtlas(() => import("./pages/Landing.jsx"));
 const Atlas = withAtlas(() => import("./pages/Atlas.jsx"));
+// Admin panel is a separate lazy chunk kept out of the public bundle.
+const Admin = lazy(() => import("./pages/admin/AdminLayout.jsx"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -54,14 +57,17 @@ export default function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-        <ScrollToTop />
-        <Suspense fallback={<Loader />}>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/atlas" element={<Atlas />} />
-            <Route path="*" element={<Landing />} />
-          </Routes>
-        </Suspense>
+        <AuthProvider>
+          <ScrollToTop />
+          <Suspense fallback={<Loader />}>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/atlas" element={<Atlas />} />
+              <Route path="/admin/*" element={<Admin />} />
+              <Route path="*" element={<Landing />} />
+            </Routes>
+          </Suspense>
+        </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>
   );

@@ -2,6 +2,7 @@ import { HABITATS } from "../../data/species.js";
 import { eeSound } from "../../lib/audio.js";
 import { Icons } from "../icons.jsx";
 import SoundToggle from "./SoundToggle.jsx";
+import AccountMenu from "./AccountMenu.jsx";
 
 const TABS = [
   { id: "all", label: "All" },
@@ -64,6 +65,8 @@ export default function Header({
         </button>
 
         <SoundToggle soundOn={soundOn} setSoundOn={setSoundOn} />
+
+        <AccountMenu />
 
         <button onClick={onOpenTweaks}
           onMouseEnter={() => eeSound.hover()}
