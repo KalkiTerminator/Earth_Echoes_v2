@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Earth's Echoes API — auth, user sync, admin CMS, analytics (Railway)",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
