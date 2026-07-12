@@ -52,4 +52,46 @@ export const adminApi = {
   async analytics(path) {
     return json(await apiFetch(`/api/admin/analytics${path}`));
   },
+
+  // ---- Command Center: autonomous ingestion agents ----
+  async listAgents() {
+    return json(await apiFetch("/api/admin/agents"));
+  },
+  async saveAgent(job, isNew) {
+    const path = isNew ? "/api/admin/agents" : `/api/admin/agents/${job.id}`;
+    return json(await apiFetch(path, { method: isNew ? "POST" : "PUT", body: JSON.stringify(job) }));
+  },
+  async deleteAgent(id) {
+    return json(await apiFetch(`/api/admin/agents/${id}`, { method: "DELETE" }));
+  },
+  async runAgent(id) {
+    return json(await apiFetch(`/api/admin/agents/${id}/run`, { method: "POST" }));
+  },
+  async runAdhoc(params) {
+    return json(await apiFetch("/api/admin/agents/run", { method: "POST", body: JSON.stringify({ params }) }));
+  },
+  async listRuns() {
+    return json(await apiFetch("/api/admin/runs"));
+  },
+  async getRun(id) {
+    return json(await apiFetch(`/api/admin/runs/${id}`));
+  },
+  async listCandidates(state) {
+    return json(await apiFetch(`/api/admin/candidates${state ? `?state=${state}` : ""}`));
+  },
+  async editCandidate(id, record) {
+    return json(await apiFetch(`/api/admin/candidates/${id}`, { method: "PUT", body: JSON.stringify({ record }) }));
+  },
+  async approveCandidate(id) {
+    return json(await apiFetch(`/api/admin/candidates/${id}/approve`, { method: "POST" }));
+  },
+  async rejectCandidate(id) {
+    return json(await apiFetch(`/api/admin/candidates/${id}/reject`, { method: "POST" }));
+  },
+  async listAudit() {
+    return json(await apiFetch("/api/admin/audit"));
+  },
+  async usage() {
+    return json(await apiFetch("/api/admin/usage"));
+  },
 };

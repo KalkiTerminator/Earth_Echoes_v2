@@ -5,12 +5,20 @@ import SpeciesList from "./SpeciesList.jsx";
 import SpeciesEdit from "./SpeciesEdit.jsx";
 import Taxonomy from "./Taxonomy.jsx";
 import Analytics from "./Analytics.jsx";
+import Agents from "./Agents.jsx";
+import Runs from "./Runs.jsx";
+import ReviewQueue from "./ReviewQueue.jsx";
+import AuditLog from "./AuditLog.jsx";
 import "../../styles/index.css";
 
 const NAV = [
   { to: "/admin", label: "Species", end: true },
+  { to: "/admin/agents", label: "Agents" },
+  { to: "/admin/review", label: "Review" },
+  { to: "/admin/runs", label: "Runs" },
   { to: "/admin/taxonomy", label: "Habitats & threats" },
   { to: "/admin/analytics", label: "Analytics" },
+  { to: "/admin/audit", label: "Audit" },
 ];
 
 // Guards the whole admin area: redirects anyone who isn't a signed-in admin
@@ -66,8 +74,12 @@ export default function AdminLayout() {
             <Route index element={<SpeciesList />} />
             <Route path="species/new" element={<SpeciesEdit />} />
             <Route path="species/:id" element={<SpeciesEdit />} />
+            <Route path="agents" element={<Agents />} />
+            <Route path="review" element={<ReviewQueue />} />
+            <Route path="runs" element={<Runs />} />
             <Route path="taxonomy" element={<Taxonomy />} />
             <Route path="analytics" element={<Analytics />} />
+            <Route path="audit" element={<AuditLog />} />
           </Routes>
         </div>
       </div>
