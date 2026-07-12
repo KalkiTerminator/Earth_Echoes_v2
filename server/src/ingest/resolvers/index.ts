@@ -9,6 +9,7 @@ import { fetchINaturalist } from "../sources/inaturalist.js";
 import { fetchIucn } from "../sources/iucn.js";
 import { fetchWikidata } from "../sources/wikidata.js";
 import { fetchXenoCanto } from "../sources/xenocanto.js";
+import { fetchScrape } from "../sources/scrape.js";
 import type {
   ConnectorResult, FieldCandidate, ResolvedField, ResolverBundle, SpeciesQuery, SpeciesRecord,
 } from "../types.js";
@@ -87,6 +88,7 @@ export async function gather(query: SpeciesQuery): Promise<GatherResult> {
     fetchIucn(q),
     fetchWikidata(q),
     fetchXenoCanto(q),
+    fetchScrape(q), // Firecrawl MCP enrichment — no-op unless configured
   ]);
 
   const byId = Object.fromEntries(results.map((r) => [r.provider, r])) as Record<string, ConnectorResult>;

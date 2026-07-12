@@ -7,6 +7,7 @@ import { runMigrations } from "./db/migrate.js";
 import { getSnapshot } from "./lib/snapshot.js";
 import { scheduleRollup } from "./jobs/rollup.js";
 import { syncSchedules } from "./ingest/scheduler.js";
+import { closeMcp } from "./ingest/mcp/client.js";
 import { promoteAdmins } from "./lib/adminBootstrap.js";
 import { pool } from "./db/client.js";
 
@@ -24,7 +25,7 @@ async function main() {
 
   const shutdown = () => {
     server.close();
-    pool.end().finally(() => process.exit(0));
+    closeMcp().finally(() => pool.end().finally(() => process.exit(0)));
   };
   process.on("SIGTERM", shutdown);
   process.on("SIGINT", shutdown);
