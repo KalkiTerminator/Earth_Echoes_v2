@@ -7,6 +7,7 @@ import { runMigrations } from "./db/migrate.js";
 import { getSnapshot } from "./lib/snapshot.js";
 import { scheduleRollup } from "./jobs/rollup.js";
 import { syncSchedules } from "./ingest/scheduler.js";
+import { sweepStaleRuns } from "./ingest/orchestrator.js";
 import { closeMcp } from "./ingest/mcp/client.js";
 import { promoteAdmins } from "./lib/adminBootstrap.js";
 import { pool } from "./db/client.js";
@@ -16,6 +17,7 @@ async function main() {
   await promoteAdmins();
   await getSnapshot(); // warm cache (may be null until first publish/seed)
   scheduleRollup();
+  await sweepStaleRuns(); // fail any runs orphaned by a previous restart
   await syncSchedules(); // register cron tasks for saved ingestion jobs
 
   const app = createApp();

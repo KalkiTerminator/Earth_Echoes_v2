@@ -133,3 +133,26 @@ double-run a job, and it stops firing once the monthly budget is reached.
 - Per-run + monthly cost caps, per-provider rate limiting, and response caching.
 - Secrets are server-only; media carries license + provenance; AI-generated
   illustrations are labeled; full audit trail.
+
+## First-run notes & known limitations
+
+None of the LLM/MCP calls have been exercised against live services yet — verify
+on first deploy:
+
+- **Model ids** (`INGEST_SYNTH_MODEL` / `INGEST_VALIDATE_MODEL` / `INGEST_MEDIA_MODEL`)
+  must match exactly what your Vertex project exposes; a wrong id 404s on the
+  first call. Override via env.
+- **Image generation** (`llm/media.ts`) is the least-certain call and fails soft
+  (returns null → species keeps its real photo/fallback). Confirm once you see a
+  real Gemini image response.
+- **MCP scrape** (`sources/scrape.ts`) uses Firecrawl's `firecrawl_scrape` tool
+  name; confirm against your live MCP server, and that your Firecrawl/Apify access
+  is a standalone MCP URL (not Bedrock-Agent-only).
+- **IUCN** parsing targets the v4 API defensively; confirm against a real token.
+- **Drizzle meta:** the ingestion migration (`drizzle/0001`) applies fine at boot
+  from the journal + SQL. If you later run `drizzle-kit generate`, first
+  regenerate the meta snapshot against a live DB so it doesn't try to re-emit the
+  ingestion tables.
+- **Scaling:** the scheduler's overlap guard is in-memory (correct for a single
+  Railway instance). Running multiple API instances needs the worker-service split
+  (a dedicated pooled connection holding a `pg_advisory_lock` for the run).

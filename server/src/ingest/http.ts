@@ -75,18 +75,3 @@ export async function getJson<T>(
   if (ttl <= 0) return { data: await run(), fromCache: false };
   return cached<T>(opts.provider, `GET ${url}`, run, ttl);
 }
-
-/** GET a text/other endpoint (e.g. SPARQL results as JSON text). */
-export async function getText(
-  url: string,
-  opts: HttpOpts & { accept?: string },
-): Promise<{ data: string; fromCache: boolean }> {
-  const ttl = opts.ttlSeconds ?? 86_400;
-  const accept = opts.accept ?? "text/plain";
-  const run = async () => {
-    const res = await liveRequest(url, opts, accept);
-    return res.text();
-  };
-  if (ttl <= 0) return { data: await run(), fromCache: false };
-  return cached<string>(opts.provider, `GET(text) ${url}`, run, ttl);
-}

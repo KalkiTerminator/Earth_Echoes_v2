@@ -3,7 +3,7 @@
 // facts+conflicts bundle to the synthesis LLM (Phase 2). Connectors are called
 // once each and their fields sliced into per-domain bundles (many sources feed
 // more than one domain).
-import { fetchGbif, resolveGbifKey } from "../sources/gbif.js";
+import { fetchGbif, matchGbif } from "../sources/gbif.js";
 import { fetchWikimedia } from "../sources/wikimedia.js";
 import { fetchINaturalist } from "../sources/inaturalist.js";
 import { fetchIucn } from "../sources/iucn.js";
@@ -69,16 +69,13 @@ export interface GatherResult {
  * Phase-1 domain bundles. This is the deterministic input the LLM loop consumes.
  */
 export async function gather(query: SpeciesQuery): Promise<GatherResult> {
-  // 1. Canonicalize identity — GBIF match gives the scientific name that keys
-  //    every other source.
+  // 1. Canonicalize identity — a single lightweight GBIF match gives the
+  //    scientific name + taxon key that key every other source. (The full GBIF
+  //    fetch, incl. occurrences, still runs once in the fan-out below.)
   const q: SpeciesQuery = { ...query };
-  if (!q.scientific) {
-    try {
-      const gr = await fetchGbif(q);
-      if (gr.ok && gr.fields.scientific) q.scientific = gr.fields.scientific;
-    } catch { /* fall through with whatever we have */ }
-  }
-  q.gbifKey = await resolveGbifKey(q).catch(() => undefined);
+  const m = await matchGbif(q);
+  if (!q.scientific && m.scientific) q.scientific = m.scientific;
+  q.gbifKey = m.key;
 
   // 2. Fan out (each connector is internally throttled + cached).
   const results = await Promise.all([

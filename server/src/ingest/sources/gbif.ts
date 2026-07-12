@@ -30,15 +30,20 @@ function median(nums: number[]): number {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-export async function resolveGbifKey(q: SpeciesQuery): Promise<number | undefined> {
+/** One lightweight GBIF backbone match → canonical scientific name + taxon key.
+ *  Used to resolve identity once before fanning out to every source. */
+export async function matchGbif(q: SpeciesQuery): Promise<{ scientific?: string; key?: number }> {
   const name = q.scientific || q.name;
-  if (q.gbifKey) return q.gbifKey;
-  if (!name) return undefined;
-  const { data } = await getJson<MatchResp>(
-    `${BASE}/species/match?name=${encodeURIComponent(name)}`,
-    { provider: "gbif" },
-  );
-  return data.usageKey;
+  if (!name) return {};
+  try {
+    const { data } = await getJson<MatchResp>(
+      `${BASE}/species/match?name=${encodeURIComponent(name)}`,
+      { provider: "gbif" },
+    );
+    return { scientific: data.canonicalName, key: data.usageKey };
+  } catch {
+    return {};
+  }
 }
 
 export async function fetchGbif(q: SpeciesQuery): Promise<ConnectorResult<unknown>> {

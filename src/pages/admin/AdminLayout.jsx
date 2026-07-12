@@ -57,12 +57,12 @@ export default function AdminLayout() {
           </Link>
         </div>
 
-        <nav className="mt-6 flex gap-2 border-b border-white/[0.08] pb-0">
+        <nav className="mt-6 flex gap-2 border-b border-white/[0.08] pb-0 overflow-x-auto whitespace-nowrap ee-scroll">
           {NAV.map((n) => {
             const active = n.end ? loc.pathname === n.to : loc.pathname.startsWith(n.to);
             return (
               <Link key={n.to} to={n.to}
-                className={`mono text-[11px] uppercase tracking-[0.18em] px-4 py-2.5 -mb-px border-b-2 transition ${active ? "border-[var(--primary,#5af0b3)] text-white" : "border-transparent text-white/50 hover:text-white/80"}`}>
+                className={`shrink-0 mono text-[11px] uppercase tracking-[0.18em] px-4 py-2.5 -mb-px border-b-2 transition ${active ? "border-[var(--primary,#5af0b3)] text-white" : "border-transparent text-white/50 hover:text-white/80"}`}>
                 {n.label}
               </Link>
             );

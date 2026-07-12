@@ -4,7 +4,7 @@
 // Optionally auto-publishes high-confidence candidates; otherwise they wait in
 // the review queue. Isolated from the public read path; per-run budget capped.
 import { nanoid } from "nanoid";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray, lt } from "drizzle-orm";
 import { db, schema } from "../db/client.js";
 import { getJson } from "./http.js";
 import { gather } from "./resolvers/index.js";
@@ -47,13 +47,19 @@ function slugify(s: string): string {
 async function discover(params: RunParams, limit: number): Promise<SpeciesQuery[]> {
   if (params.names?.length) return params.names.slice(0, limit).map((n) => ({ name: n }));
   if (!params.taxon) return [];
-  // GBIF species search by higher taxon — accepted species only.
+  const cap = Math.min(50, limit * 4);
   try {
-    const { data } = await getJson<{ results?: { canonicalName?: string; rank?: string; taxonomicStatus?: string }[] }>(
-      `https://api.gbif.org/v1/species/search?q=${encodeURIComponent(params.taxon)}` +
-        `&rank=SPECIES&status=ACCEPTED&highertaxon_key=&limit=${Math.min(50, limit * 4)}`,
+    // Resolve the higher taxon to a GBIF backbone key, then list accepted species
+    // *under* it (highertaxonKey). Full-text `q=` only matches names and would
+    // return loosely-related species rather than true members of the taxon.
+    const { data: match } = await getJson<{ usageKey?: number }>(
+      `https://api.gbif.org/v1/species/match?name=${encodeURIComponent(params.taxon)}`,
       { provider: "gbif" },
     );
+    const searchUrl = match.usageKey
+      ? `https://api.gbif.org/v1/species/search?highertaxonKey=${match.usageKey}&rank=SPECIES&status=ACCEPTED&limit=${cap}`
+      : `https://api.gbif.org/v1/species/search?q=${encodeURIComponent(params.taxon)}&rank=SPECIES&status=ACCEPTED&limit=${cap}`;
+    const { data } = await getJson<{ results?: { canonicalName?: string }[] }>(searchUrl, { provider: "gbif" });
     const names = new Set<string>();
     for (const r of data.results || []) {
       if (r.canonicalName) names.add(r.canonicalName);
@@ -62,6 +68,24 @@ async function discover(params: RunParams, limit: number): Promise<SpeciesQuery[
     return [...names].map((n) => ({ scientific: n }));
   } catch {
     return [];
+  }
+}
+
+/**
+ * Mark runs orphaned by a process restart as failed, so they don't sit
+ * "running" forever. Called once at boot.
+ */
+export async function sweepStaleRuns(): Promise<void> {
+  try {
+    await db
+      .update(schema.ingestRuns)
+      .set({ status: "failed", error: "interrupted by restart", finishedAt: new Date() })
+      .where(and(
+        inArray(schema.ingestRuns.status, ["running", "queued"]),
+        lt(schema.ingestRuns.startedAt, new Date(Date.now() - 3_600_000)),
+      ));
+  } catch {
+    // best-effort
   }
 }
 
@@ -162,7 +186,11 @@ export async function runSpeciesIngest(input: {
       }
     } catch (e) {
       stats.notes.push(`error ${JSON.stringify(query)}: ${String(e)}`);
-      if (String(e).includes("Run budget exceeded")) { stats.notes.push("stopping: per-run budget cap reached"); break; }
+      if (String(e).includes("Run budget exceeded")) {
+        stats.notes.push("stopping: per-run budget cap reached");
+        stats.costCents = Math.round(budget.spent);
+        break;
+      }
     }
     stats.costCents = Math.round(budget.spent);
   }

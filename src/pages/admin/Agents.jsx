@@ -65,7 +65,7 @@ export default function Agents() {
       <div className={card}>
         <div className="flex items-center justify-between">
           <div className={label}>This month's ingestion spend</div>
-          <div className="mono text-xs text-white/50">${(usage?.monthCents ?? 0) / 100} / ${(usage?.monthlyCapCents ?? 0) / 100} cap</div>
+          <div className="mono text-xs text-white/50">${((usage?.monthCents ?? 0) / 100).toFixed(2)} / ${((usage?.monthlyCapCents ?? 0) / 100).toFixed(2)} cap</div>
         </div>
         <div className="mt-3 h-2 rounded-full bg-white/[0.06] overflow-hidden">
           <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct > 85 ? "#f87171" : "var(--primary,#5af0b3)" }} />
