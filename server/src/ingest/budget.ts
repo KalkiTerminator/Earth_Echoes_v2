@@ -19,8 +19,9 @@ function firstOfMonth(): string {
   return today().slice(0, 8) + "01";
 }
 
-/** Record usage for a provider against today's row (best-effort). */
-export async function meter(provider: ProviderId, u: Usage): Promise<void> {
+/** Record usage for a provider against today's row (best-effort). Accepts any
+ *  provider label (connector ProviderId or an LLM label like "vertex-gemini"). */
+export async function meter(provider: ProviderId | string, u: Usage): Promise<void> {
   const calls = u.calls ?? 0;
   const tokens = u.tokens ?? 0;
   const costCents = u.costCents ?? 0;
