@@ -8,6 +8,7 @@ import { fetchWikimedia } from "../sources/wikimedia.js";
 import { fetchINaturalist } from "../sources/inaturalist.js";
 import { fetchIucn } from "../sources/iucn.js";
 import { fetchWikidata } from "../sources/wikidata.js";
+import { fetchXenoCanto } from "../sources/xenocanto.js";
 import type {
   ConnectorResult, FieldCandidate, ResolvedField, ResolverBundle, SpeciesQuery, SpeciesRecord,
 } from "../types.js";
@@ -85,6 +86,7 @@ export async function gather(query: SpeciesQuery): Promise<GatherResult> {
     fetchINaturalist(q),
     fetchIucn(q),
     fetchWikidata(q),
+    fetchXenoCanto(q),
   ]);
 
   const byId = Object.fromEntries(results.map((r) => [r.provider, r])) as Record<string, ConnectorResult>;
@@ -95,6 +97,7 @@ export async function gather(query: SpeciesQuery): Promise<GatherResult> {
     bundle("status", pick("iucn", "inaturalist", "wikidata"), ["status", "population", "threats"]),
     bundle("coordinates", pick("gbif"), ["lat", "lng"]),
     bundle("media", pick("wikimedia", "inaturalist", "wikidata"), ["imageRemote", "description"]),
+    bundle("audio", pick("xenocanto"), ["audioUrl"]),
   ];
 
   return { query: q, scientific: q.scientific, gbifKey: q.gbifKey, bundles, results };

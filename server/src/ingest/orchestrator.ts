@@ -85,6 +85,7 @@ export async function runSpeciesIngest(input: {
   runId?: string;
   jobId?: string | null;
   triggeredBy?: string | null;
+  trigger?: "manual" | "scheduled";
 }): Promise<RunResult> {
   const runId = input.runId ?? nanoid();
   const params = input.params;
@@ -95,7 +96,7 @@ export async function runSpeciesIngest(input: {
   // Ensure a run row exists and is marked running.
   await db
     .insert(schema.ingestRuns)
-    .values({ id: runId, jobId: input.jobId ?? null, trigger: "manual", status: "running", startedAt: new Date(), triggeredBy: input.triggeredBy ?? null })
+    .values({ id: runId, jobId: input.jobId ?? null, trigger: input.trigger ?? "manual", status: "running", startedAt: new Date(), triggeredBy: input.triggeredBy ?? null })
     .onConflictDoUpdate({ target: schema.ingestRuns.id, set: { status: "running", startedAt: new Date() } });
   await audit({ actor: input.triggeredBy ?? "agent", action: "run.start", entity: "run", entityId: runId, meta: { params } });
 
@@ -121,6 +122,12 @@ export async function runSpeciesIngest(input: {
         budget,
       );
       const record = loop.record;
+
+      // Audio: a real recording from Xeno-canto if one exists (deterministic —
+      // never LLM-synthesized). Extinct species usually have none → the viewer
+      // falls back to generative habitat ambience.
+      const xc = g.results.find((r) => r.provider === "xenocanto" && r.ok);
+      if (xc?.fields.audioUrl) record.audioUrl = xc.fields.audioUrl;
 
       // Media for gaps: generate an illustration only when no photo was found.
       if (!record.imageRemote && !record.imageUrl) {

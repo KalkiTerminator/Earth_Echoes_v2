@@ -9,6 +9,7 @@ import { and, desc, eq, gte } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db, schema } from "../../db/client.js";
 import { runSpeciesIngest, type RunParams } from "../../ingest/orchestrator.js";
+import { syncSchedules } from "../../ingest/scheduler.js";
 import { promoteCandidate, rejectCandidate } from "../../ingest/promote.js";
 import { monthlySpendCents } from "../../ingest/budget.js";
 import { env } from "../../env.js";
@@ -50,6 +51,7 @@ adminAgents.post("/agents", async (c) => {
     id, name: parsed.data.name, domain: parsed.data.domain, params: parsed.data.params,
     schedule: parsed.data.schedule ?? null, enabled: parsed.data.enabled ?? true, createdBy: userId(c),
   });
+  void syncSchedules();
   return c.json({ ok: true, id }, 201);
 });
 
@@ -57,11 +59,13 @@ adminAgents.put("/agents/:id", async (c) => {
   const parsed = jobSchema.partial().safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: "invalid", issues: parsed.error.issues }, 400);
   await db.update(schema.ingestJobs).set({ ...parsed.data, updatedAt: new Date() }).where(eq(schema.ingestJobs.id, c.req.param("id")));
+  void syncSchedules();
   return c.json({ ok: true });
 });
 
 adminAgents.delete("/agents/:id", async (c) => {
   await db.delete(schema.ingestJobs).where(eq(schema.ingestJobs.id, c.req.param("id")));
+  void syncSchedules();
   return c.json({ ok: true });
 });
 
