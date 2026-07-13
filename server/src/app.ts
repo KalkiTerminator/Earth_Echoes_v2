@@ -16,6 +16,7 @@ import { meRoutes } from "./routes/me.js";
 import { adminContent } from "./routes/admin/content.js";
 import { adminUploads } from "./routes/admin/uploads.js";
 import { adminAnalytics } from "./routes/admin/analytics.js";
+import { adminAgents } from "./routes/admin/agents.js";
 import type { Variables } from "./types.js";
 
 export function createApp() {
@@ -63,6 +64,7 @@ export function createApp() {
   app.route("/api/admin", adminContent);
   app.route("/api/admin", adminUploads);
   app.route("/api/admin/analytics", adminAnalytics);
+  app.route("/api/admin", adminAgents);
 
   return app;
 }

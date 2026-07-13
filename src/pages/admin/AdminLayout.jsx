@@ -5,12 +5,20 @@ import SpeciesList from "./SpeciesList.jsx";
 import SpeciesEdit from "./SpeciesEdit.jsx";
 import Taxonomy from "./Taxonomy.jsx";
 import Analytics from "./Analytics.jsx";
+import Agents from "./Agents.jsx";
+import Runs from "./Runs.jsx";
+import ReviewQueue from "./ReviewQueue.jsx";
+import AuditLog from "./AuditLog.jsx";
 import "../../styles/index.css";
 
 const NAV = [
   { to: "/admin", label: "Species", end: true },
+  { to: "/admin/agents", label: "Agents" },
+  { to: "/admin/review", label: "Review" },
+  { to: "/admin/runs", label: "Runs" },
   { to: "/admin/taxonomy", label: "Habitats & threats" },
   { to: "/admin/analytics", label: "Analytics" },
+  { to: "/admin/audit", label: "Audit" },
 ];
 
 // Guards the whole admin area: redirects anyone who isn't a signed-in admin
@@ -49,12 +57,12 @@ export default function AdminLayout() {
           </Link>
         </div>
 
-        <nav className="mt-6 flex gap-2 border-b border-white/[0.08] pb-0">
+        <nav className="mt-6 flex gap-2 border-b border-white/[0.08] pb-0 overflow-x-auto whitespace-nowrap ee-scroll">
           {NAV.map((n) => {
             const active = n.end ? loc.pathname === n.to : loc.pathname.startsWith(n.to);
             return (
               <Link key={n.to} to={n.to}
-                className={`mono text-[11px] uppercase tracking-[0.18em] px-4 py-2.5 -mb-px border-b-2 transition ${active ? "border-[var(--primary,#5af0b3)] text-white" : "border-transparent text-white/50 hover:text-white/80"}`}>
+                className={`shrink-0 mono text-[11px] uppercase tracking-[0.18em] px-4 py-2.5 -mb-px border-b-2 transition ${active ? "border-[var(--primary,#5af0b3)] text-white" : "border-transparent text-white/50 hover:text-white/80"}`}>
                 {n.label}
               </Link>
             );
@@ -66,8 +74,12 @@ export default function AdminLayout() {
             <Route index element={<SpeciesList />} />
             <Route path="species/new" element={<SpeciesEdit />} />
             <Route path="species/:id" element={<SpeciesEdit />} />
+            <Route path="agents" element={<Agents />} />
+            <Route path="review" element={<ReviewQueue />} />
+            <Route path="runs" element={<Runs />} />
             <Route path="taxonomy" element={<Taxonomy />} />
             <Route path="analytics" element={<Analytics />} />
+            <Route path="audit" element={<AuditLog />} />
           </Routes>
         </div>
       </div>

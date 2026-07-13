@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HABITATS } from "../../data/species.js";
 import { eeSound } from "../../lib/audio.js";
 import { fmtYear, statusColor } from "../../lib/format.js";
@@ -31,11 +31,34 @@ export default function Takeover({ species, onClose, onPrev, onNext, onShare, bo
   }, [species, onClose, onNext, onPrev]);
 
   const [playing, setPlaying] = useState(false);
-  useEffect(() => { setPlaying(false); }, [species?.id]);
+  const audioRef = useRef(null);
+  // Stop + release any playing recording when the species changes or unmounts.
+  useEffect(() => {
+    setPlaying(false);
+    return () => { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } };
+  }, [species?.id]);
 
   if (!species) return null;
   const h = HABITATS[species.habitat];
   const sColor = statusColor(species.status);
+  const hasRealAudio = !!species.audioUrl;
+
+  // Play a real recording (species.audioUrl) if present; otherwise the existing
+  // synthesized tone stands in.
+  const toggleAudio = () => {
+    eeSound.click();
+    if (!hasRealAudio) {
+      setPlaying((p) => !p);
+      if (!playing) setTimeout(() => eeSound.panelOpen(), 200);
+      return;
+    }
+    if (!audioRef.current) {
+      audioRef.current = new Audio(species.audioUrl);
+      audioRef.current.onended = () => setPlaying(false);
+    }
+    if (playing) { audioRef.current.pause(); setPlaying(false); }
+    else { audioRef.current.play().then(() => setPlaying(true)).catch(() => setPlaying(false)); }
+  };
 
   return (
     <div className="fixed inset-0 z-[70]" style={{ animation: "fadeIn .4s ease-out both" }} role="dialog" aria-label={`${species.name} profile`}>
@@ -118,7 +141,7 @@ export default function Takeover({ species, onClose, onPrev, onNext, onShare, bo
           {/* Action row */}
           <div className="mt-5 flex items-center gap-3">
             <button
-              onClick={() => { setPlaying(!playing); eeSound.click(); if (!playing) setTimeout(() => eeSound.panelOpen(), 200); }}
+              onClick={toggleAudio}
               onMouseEnter={() => eeSound.hover()}
               className="flex-1 h-12 rounded-xl flex items-center justify-center gap-2 font-medium transition hover:scale-[1.01]"
               style={{
@@ -128,7 +151,9 @@ export default function Takeover({ species, onClose, onPrev, onNext, onShare, bo
               }}>
               {playing ? <Icons.Pause size={14} /> : <Icons.Volume size={14} />}
               <span className="mono text-[10px] sm:text-xs uppercase tracking-[0.18em]">
-                {playing ? "Playing — Ambient Simulation" : "Listen to Ambient Simulation"}
+                {hasRealAudio
+                  ? (playing ? "Playing — recording" : "Listen to recording")
+                  : (playing ? "Playing — Ambient Simulation" : "Listen to Ambient Simulation")}
               </span>
             </button>
             <button onClick={() => { eeSound.click(); onBookmark(species.id); }}
@@ -160,7 +185,7 @@ export default function Takeover({ species, onClose, onPrev, onNext, onShare, bo
                   }} />
                 ))}
               </div>
-              Note: a synthesized tone stands in for species audio.
+              {hasRealAudio ? "Recording via Xeno-canto (CC)." : "Note: a synthesized tone stands in for species audio."}
             </div>
           )}
         </div>

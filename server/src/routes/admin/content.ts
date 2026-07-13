@@ -23,7 +23,9 @@ adminContent.get("/preview", async (c) => {
 });
 
 // ---- species ----
-const speciesSchema = z.object({
+// Exported so the ingestion promoter re-validates agent candidates through the
+// exact same contract as manual admin writes.
+export const speciesSchema = z.object({
   id: z.string().min(1).max(64).regex(/^[a-z0-9-]+$/, "id must be a lowercase slug"),
   name: z.string().min(1),
   scientific: z.string().optional().nullable(),
