@@ -4,6 +4,7 @@ import { serve } from "@hono/node-server";
 import { createApp } from "./app.js";
 import { env } from "./env.js";
 import { runMigrations } from "./db/migrate.js";
+import { seedIfEmpty } from "./db/seed.js";
 import { getSnapshot } from "./lib/snapshot.js";
 import { scheduleRollup } from "./jobs/rollup.js";
 import { syncSchedules } from "./ingest/scheduler.js";
@@ -15,6 +16,7 @@ import { pool } from "./db/client.js";
 async function main() {
   await runMigrations();
   await promoteAdmins();
+  await seedIfEmpty(); // bootstrap baseline content on an empty DB (idempotent)
   await getSnapshot(); // warm cache (may be null until first publish/seed)
   scheduleRollup();
   await sweepStaleRuns(); // fail any runs orphaned by a previous restart
