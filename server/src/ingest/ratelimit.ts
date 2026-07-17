@@ -21,6 +21,7 @@ const MIN_INTERVAL_MS: Partial<Record<ProviderId, number>> & { default: number }
   gemini: 350,
   firecrawl: 500,
   apify: 500,
+  edge: 500,
 };
 
 const lastAt: Partial<Record<ProviderId, number>> = {};

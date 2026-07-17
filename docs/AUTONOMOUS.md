@@ -24,15 +24,19 @@ validated `publish()` → new snapshot.
 
 | Domain | Sources | Auth |
 |---|---|---|
-| Taxonomy/identity | GBIF, Catalogue of Life*, Wikidata | none |
-| Conservation status/threats | **IUCN Red List**, iNaturalist, Wikidata | IUCN token |
-| Coordinates | GBIF occurrences | none |
+| Taxonomy/identity | GBIF, **Catalogue of Life**, iNaturalist, Wikidata | none (CoL: release key) |
+| Conservation status/threats | **IUCN Red List**, iNaturalist, Wikidata, **EDGE** (uniqueness) | IUCN token; EDGE via Firecrawl |
+| Coordinates | GBIF occurrences, **OBIS** (marine), iNaturalist (open obs) | none |
 | Description/media | Wikimedia, iNaturalist, Wikidata | none (UA required) |
 | Audio | Xeno-canto (real recordings) | none |
 | Scrape enrichment | Firecrawl / Apify (MCP) | keys, optional |
 
-\* wired points are GBIF/Wikimedia/iNaturalist/IUCN/Wikidata/Xeno-canto today;
-others from the API directory are staged for later phases.
+Coordinates now cross-check three authorities (GBIF + OBIS marine + open iNat
+observations; obscured points for threatened taxa are never used). Catalogue of
+Life adds an authoritative name backbone (set `INGEST_COL_DATASET` to the current
+COL release to enable; unset → skipped). EDGE of Existence adds an evolutionary-
+distinctiveness grounding signal via the Firecrawl MCP tier (no-op unless
+Firecrawl is configured). Remaining directory sources are staged for later phases.
 
 ## LLMs — all on Google Vertex AI (one credit pool)
 
@@ -71,6 +75,7 @@ GOOGLE_VERTEX_ANTHROPIC_LOCATION    = us-east5
 
 **Optional (better data / higher limits / enrichment):**
 ```
+INGEST_COL_DATASET    = <current Catalogue of Life release key on ChecklistBank>
 IUCN_TOKEN            = <free non-commercial token, api.iucnredlist.org>
 INGEST_CONTACT_EMAIL  = you@example.org   # sent in the User-Agent (polite)
 EBIRD_TOKEN, FLICKR_API_KEY, UNSPLASH_ACCESS_KEY, NCBI_API_KEY, NATURESERVE_TOKEN
