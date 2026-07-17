@@ -10,6 +10,9 @@ import { fetchIucn } from "../sources/iucn.js";
 import { fetchWikidata } from "../sources/wikidata.js";
 import { fetchXenoCanto } from "../sources/xenocanto.js";
 import { fetchScrape } from "../sources/scrape.js";
+import { fetchObis } from "../sources/obis.js";
+import { fetchCatalogueOfLife } from "../sources/catalogueoflife.js";
+import { fetchEdge } from "../sources/edge.js";
 import type {
   ConnectorResult, FieldCandidate, ResolvedField, ResolverBundle, SpeciesQuery, SpeciesRecord,
 } from "../types.js";
@@ -85,16 +88,19 @@ export async function gather(query: SpeciesQuery): Promise<GatherResult> {
     fetchIucn(q),
     fetchWikidata(q),
     fetchXenoCanto(q),
+    fetchObis(q), // marine/aquatic coordinate authority
+    fetchCatalogueOfLife(q), // authoritative taxonomy backbone (skips unless configured)
     fetchScrape(q), // Firecrawl MCP enrichment — no-op unless configured
+    fetchEdge(q), // EDGE uniqueness grounding via Firecrawl — no-op unless configured
   ]);
 
   const byId = Object.fromEntries(results.map((r) => [r.provider, r])) as Record<string, ConnectorResult>;
   const pick = (...ids: string[]) => ids.map((id) => byId[id]).filter(Boolean);
 
   const bundles: ResolverBundle[] = [
-    bundle("taxonomy", pick("gbif", "inaturalist", "wikidata"), ["name", "scientific"]),
-    bundle("status", pick("iucn", "inaturalist", "wikidata"), ["status", "population", "threats"]),
-    bundle("coordinates", pick("gbif"), ["lat", "lng"]),
+    bundle("taxonomy", pick("gbif", "catalogueoflife", "inaturalist", "wikidata"), ["name", "scientific"]),
+    bundle("status", pick("iucn", "inaturalist", "wikidata", "edge"), ["status", "population", "threats"]),
+    bundle("coordinates", pick("gbif", "obis", "inaturalist"), ["lat", "lng"]),
     bundle("media", pick("wikimedia", "inaturalist", "wikidata"), ["imageRemote", "description"]),
     bundle("audio", pick("xenocanto"), ["audioUrl"]),
   ];

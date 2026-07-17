@@ -8,7 +8,7 @@ export type ProviderId =
   | "gbif" | "iucn" | "wikimedia" | "inaturalist" | "wikidata"
   | "obis" | "ebird" | "catalogueoflife" | "xenocanto"
   | "openai" | "deepseek" | "gemini"
-  | "firecrawl" | "apify";
+  | "firecrawl" | "apify" | "edge";
 
 // The proposed public species record (subset of the DB/frontend contract).
 export interface SpeciesRecord {

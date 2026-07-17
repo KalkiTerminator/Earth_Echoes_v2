@@ -56,6 +56,11 @@ export const env = {
     validateModel: process.env.INGEST_VALIDATE_MODEL || "gemini-2.5-flash", // Gemini (thinking)
     mediaModel: process.env.INGEST_MEDIA_MODEL || "gemini-2.5-flash",       // Gemini multimodal
 
+    // Catalogue of Life release key (ChecklistBank dataset id). COL cuts a new
+    // release monthly; set this to the current release to enable the backbone
+    // cross-check. Unset → the connector skips cleanly.
+    colDataset: process.env.INGEST_COL_DATASET || "",
+
     // Source tokens for the direct-HTTP connectors (free-but-registered).
     iucnToken: process.env.IUCN_TOKEN || "",
     ebirdToken: process.env.EBIRD_TOKEN || "",
