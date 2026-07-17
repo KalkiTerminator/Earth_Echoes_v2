@@ -20,7 +20,7 @@ export const requireAdmin = createMiddleware<{ Variables: Variables }>(async (c,
 // Reject state-changing requests whose Origin header isn't the trusted app.
 export const requireSameOrigin = createMiddleware(async (c, next) => {
   const origin = c.req.header("origin");
-  if (origin && origin !== env.appOrigin) {
+  if (origin && !env.appOrigins.includes(origin)) {
     return c.json({ error: "bad origin" }, 403);
   }
   await next();

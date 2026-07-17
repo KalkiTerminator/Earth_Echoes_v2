@@ -27,7 +27,7 @@ export function createApp() {
   // Credentialed CORS is restricted to the app origin. The cookie-free public
   // reads (/api/species, /files/*) set their own permissive ACAO header.
   app.use("*", cors({
-    origin: env.appOrigin,
+    origin: env.appOrigins,
     credentials: true,
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type"],
