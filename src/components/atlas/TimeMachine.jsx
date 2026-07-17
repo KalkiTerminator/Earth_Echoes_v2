@@ -15,7 +15,10 @@ const TICKS = [
 
 export default function TimeMachine({ year, setYear, accent, species = [], onQuiz }) {
   const [playing, setPlaying] = useState(false);
+  const [open, setOpen] = useState(true);
   const raf = useRef();
+
+  const toggle = () => { eeSound.click(); setOpen((o) => !o); };
 
   useEffect(() => {
     if (!playing) return;
@@ -37,13 +40,14 @@ export default function TimeMachine({ year, setYear, accent, species = [], onQui
 
   return (
     <div className="absolute left-1/2 -translate-x-1/2 bottom-4 sm:bottom-6 z-30 pointer-events-auto w-[calc(100vw-2rem)] sm:w-[min(820px,70vw)]">
-      <div className="glass rounded-2xl px-4 sm:px-6 pt-4 pb-5">
+      <div className={`glass rounded-2xl px-4 sm:px-6 pt-4 transition-[padding] duration-300 ${open ? "pb-5" : "pb-4"}`}>
         <div className="flex items-center justify-between gap-3 sm:gap-6">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 cursor-pointer select-none" onClick={toggle}
+            role="button" aria-expanded={open} aria-label={open ? "Collapse time machine" : "Expand time machine"}>
             <Icons.History size={14} className="text-white/60 shrink-0" />
             <div className="mono text-[11px] uppercase tracking-[0.22em] text-white/50 whitespace-nowrap">Time Machine</div>
             {onQuiz && (
-              <button onClick={() => { eeSound.click(); onQuiz(); }}
+              <button onClick={(e) => { e.stopPropagation(); eeSound.click(); onQuiz(); }}
                 onMouseEnter={() => eeSound.hover()}
                 className="mono text-[9px] uppercase tracking-[0.22em] px-2.5 py-1 rounded-full border border-white/10 text-white/45 hover:text-white hover:border-white/30 transition hidden sm:block whitespace-nowrap">
                 Play: guess the year
@@ -61,9 +65,24 @@ export default function TimeMachine({ year, setYear, accent, species = [], onQui
               className="w-9 h-9 rounded-full flex items-center justify-center border border-white/15 hover:bg-white/10 transition shrink-0">
               {playing ? <Icons.Pause size={13} /> : <Icons.Play size={13} />}
             </button>
+            <button
+              onClick={toggle}
+              onMouseEnter={() => eeSound.hover()}
+              aria-label={open ? "Collapse time machine" : "Expand time machine"}
+              aria-expanded={open}
+              className="w-9 h-9 rounded-full flex items-center justify-center border border-white/15 hover:bg-white/10 transition shrink-0 text-white/60 hover:text-white">
+              <Icons.ChevronDown size={13}
+                className={`transition-transform duration-300 ${open ? "" : "rotate-180"}`} />
+            </button>
           </div>
         </div>
-        <div className="mt-4 relative">
+        {/* Collapsible slider section — grid-rows animates the height smoothly. */}
+        <div
+          className="grid transition-[grid-template-rows,opacity] duration-400 ease-[cubic-bezier(0.4,0,0.2,1)]"
+          style={{ gridTemplateRows: open ? "1fr" : "0fr", opacity: open ? 1 : 0 }}
+          aria-hidden={!open}>
+          <div className={`overflow-hidden min-h-0 ${open ? "" : "pointer-events-none"}`}>
+            <div className="mt-4 relative">
           <input
             type="range" className="ee-range"
             min={MIN_YEAR} max={MAX_YEAR} step="1" value={year}
@@ -96,6 +115,8 @@ export default function TimeMachine({ year, setYear, accent, species = [], onQui
                 {t.label}
               </button>
             ))}
+          </div>
+            </div>
           </div>
         </div>
       </div>
