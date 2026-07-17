@@ -17,8 +17,12 @@ export const env = {
   authSecret: required("BETTER_AUTH_SECRET", "dev-insecure-secret-change-me-0123456789abcd"),
   // Where the API itself is reachable (used by Better Auth for callback URLs).
   authUrl: process.env.BETTER_AUTH_URL || "http://localhost:8787",
-  // The single browser origin allowed to send credentialed requests.
-  appOrigin: process.env.APP_ORIGIN || "http://localhost:5173",
+  // Browser origins allowed to send credentialed requests (comma-separated;
+  // e.g. "https://earthsechoes.org,https://www.earthsechoes.org").
+  appOrigins: (process.env.APP_ORIGIN || "http://localhost:5173")
+    .split(",")
+    .map((s) => s.trim().replace(/\/$/, ""))
+    .filter(Boolean),
   // Leading-dot domain for cross-subdomain cookies (app + api). Empty locally.
   cookieDomain: process.env.COOKIE_DOMAIN || "",
   // Comma-separated emails auto-promoted to admin on first sign-in.
