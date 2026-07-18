@@ -1,7 +1,8 @@
-// Synthesis step — Claude Haiku on Vertex reconciles the multi-source
-// facts+conflicts bundles into ONE structured species record, grounded in the
-// provided sources (it must not invent hard facts). Returns per-field
-// provenance for the validator and the audit trail.
+// Synthesis step — the synthesis model (Gemini by default, or Claude on Vertex
+// if a claude-* id is configured) reconciles the multi-source facts+conflicts
+// bundles into ONE structured species record, grounded in the provided sources
+// (it must not invent hard facts). Returns per-field provenance for the
+// validator and the audit trail.
 import { generateObject } from "ai";
 import { z } from "zod";
 import { synthModel } from "./provider.js";
