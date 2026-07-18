@@ -51,10 +51,13 @@ export const env = {
     vertexAnthropicLocation: process.env.GOOGLE_VERTEX_ANTHROPIC_LOCATION || "",
     // Service-account JSON (stringified). Also honors GOOGLE_APPLICATION_CREDENTIALS.
     googleCredentialsJson: process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || "",
-    // Model IDs (override to the exact ids your Vertex project exposes).
-    synthModel: process.env.INGEST_SYNTH_MODEL || "claude-haiku-4-5",       // Anthropic on Vertex
-    validateModel: process.env.INGEST_VALIDATE_MODEL || "gemini-2.5-flash", // Gemini (thinking)
-    mediaModel: process.env.INGEST_MEDIA_MODEL || "gemini-2.5-flash",       // Gemini multimodal
+    // Model IDs (override to the exact ids your Vertex project exposes). Synthesis
+    // routes to Anthropic-on-Vertex only for a `claude-*` id; the default is Gemini
+    // so the pipeline needs no Anthropic terms. Media MUST be an image-capable model
+    // (a text model returns no image).
+    synthModel: process.env.INGEST_SYNTH_MODEL || "gemini-2.5-flash",         // synthesis (Gemini or claude-*)
+    validateModel: process.env.INGEST_VALIDATE_MODEL || "gemini-2.5-flash",   // Gemini (thinking) — validation
+    mediaModel: process.env.INGEST_MEDIA_MODEL || "gemini-2.5-flash-image",   // Gemini image model
 
     // Catalogue of Life release key (ChecklistBank dataset id). COL cuts a new
     // release monthly; set this to the current release to enable the backbone
