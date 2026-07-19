@@ -5,7 +5,7 @@
 // more than one domain).
 import { fetchGbif, matchGbif } from "../sources/gbif.js";
 import { fetchWikimedia } from "../sources/wikimedia.js";
-import { fetchINaturalist } from "../sources/inaturalist.js";
+import { fetchINaturalist, matchINaturalist } from "../sources/inaturalist.js";
 import { fetchIucn } from "../sources/iucn.js";
 import { fetchWikidata } from "../sources/wikidata.js";
 import { fetchXenoCanto } from "../sources/xenocanto.js";
@@ -79,6 +79,18 @@ export async function gather(query: SpeciesQuery): Promise<GatherResult> {
   const m = await matchGbif(q);
   if (!q.scientific && m.scientific) q.scientific = m.scientific;
   q.gbifKey = m.key;
+
+  // GBIF's matcher only reliably resolves scientific names. If a common-name
+  // query didn't resolve, fall back to iNaturalist (good at vernacular names)
+  // for the scientific name, then re-key GBIF from it for occurrences.
+  if (!q.scientific) {
+    const alt = await matchINaturalist(q);
+    if (alt.scientific) {
+      q.scientific = alt.scientific;
+      const m2 = await matchGbif({ scientific: alt.scientific });
+      if (m2.key) q.gbifKey = m2.key;
+    }
+  }
 
   // 2. Fan out (each connector is internally throttled + cached).
   const results = await Promise.all([

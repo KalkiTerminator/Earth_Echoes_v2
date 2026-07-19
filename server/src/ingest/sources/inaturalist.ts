@@ -34,6 +34,24 @@ function median(nums: number[]): number {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
+/** Resolve a name (common OR scientific) to a scientific name via iNaturalist's
+ *  taxon search, which handles vernacular names well. Used as an identity
+ *  fallback when GBIF's scientific-name matcher fails on a common name. */
+export async function matchINaturalist(q: SpeciesQuery): Promise<{ scientific?: string }> {
+  const term = q.scientific || q.name;
+  if (!term) return {};
+  try {
+    const { data } = await getJson<TaxaResp>(
+      `https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(term)}&per_page=1`,
+      { provider: "inaturalist" },
+    );
+    const sci = data.results?.[0]?.name;
+    return sci ? { scientific: sci } : {};
+  } catch {
+    return {};
+  }
+}
+
 // Median point of open (non-obscured) observations. Returns null on any issue —
 // coordinates for threatened taxa are deliberately obscured by iNaturalist, so
 // we only ever trust points explicitly flagged open at both obs + taxon level.
