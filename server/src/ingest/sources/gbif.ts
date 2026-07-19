@@ -46,6 +46,24 @@ export async function matchGbif(q: SpeciesQuery): Promise<{ scientific?: string;
   }
 }
 
+/** Top candidate species for a name (common or scientific) — includes vernacular
+ *  hits, so an LLM can disambiguate. Returns [] on any failure. */
+export async function searchGbif(name: string): Promise<{ scientific: string; key?: number; rank?: string }[]> {
+  try {
+    const { data } = await getJson<{ results?: { canonicalName?: string; key?: number; nubKey?: number; rank?: string }[] }>(
+      `${BASE}/species/search?q=${encodeURIComponent(name)}&rank=SPECIES&status=ACCEPTED&limit=5`,
+      { provider: "gbif" },
+    );
+    const out: { scientific: string; key?: number; rank?: string }[] = [];
+    for (const r of data.results || []) {
+      if (r.canonicalName) out.push({ scientific: r.canonicalName, key: r.nubKey ?? r.key, rank: r.rank });
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchGbif(q: SpeciesQuery): Promise<ConnectorResult<unknown>> {
   const name = q.scientific || q.name;
   if (!name) return { provider: "gbif", ok: false, fields: {}, raw: null, error: "no name" };

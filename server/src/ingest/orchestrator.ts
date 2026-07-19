@@ -9,6 +9,7 @@ import { db, schema } from "../db/client.js";
 import { getJson } from "./http.js";
 import { gather } from "./resolvers/index.js";
 import { resolveAudio } from "./audio.js";
+import { resolveSpeciesIdentity } from "./llm/identify.js";
 import { synthValidateLoop } from "./llm/loop.js";
 import { generateSpeciesImage } from "./llm/media.js";
 import { generateSpeciesAudio } from "./llm/audio.js";
@@ -140,7 +141,14 @@ export async function runSpeciesIngest(input: {
 
   for (const query of targets) {
     try {
-      const g = await gather(query);
+      // Identity first: an LLM reads candidate taxa from GBIF + iNaturalist +
+      // Catalogue of Life and picks the correct species; a second LLM validates
+      // the pick. This stops wrong-species matches (e.g. "Vaquita" → a ladybug)
+      // from poisoning the whole record. Unconfirmed → skip with a clear reason.
+      const ident = await resolveSpeciesIdentity(query, budget);
+      if (!ident.ok) { stats.skipped++; stats.notes.push(`skip ${JSON.stringify(query)}: ${ident.reason}`); continue; }
+
+      const g = await gather({ scientific: ident.identity.scientific, gbifKey: ident.identity.gbifKey });
       if (!g.scientific) { stats.skipped++; stats.notes.push(`skip ${JSON.stringify(query)}: unresolved identity`); continue; }
 
       const loop = await synthValidateLoop(
