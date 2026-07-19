@@ -52,6 +52,24 @@ export async function matchINaturalist(q: SpeciesQuery): Promise<{ scientific?: 
   }
 }
 
+/** Top candidate taxa for a name (common or scientific), each with its common
+ *  name — the input an LLM disambiguates over. Returns [] on failure. */
+export async function searchINaturalist(name: string): Promise<{ scientific: string; common?: string; rank?: string }[]> {
+  try {
+    const { data } = await getJson<TaxaResp>(
+      `https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(name)}&per_page=5`,
+      { provider: "inaturalist" },
+    );
+    const out: { scientific: string; common?: string; rank?: string }[] = [];
+    for (const t of data.results || []) {
+      if (t.name) out.push({ scientific: t.name, common: t.preferred_common_name, rank: t.rank });
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 // Median point of open (non-obscured) observations. Returns null on any issue —
 // coordinates for threatened taxa are deliberately obscured by iNaturalist, so
 // we only ever trust points explicitly flagged open at both obs + taxon level.
