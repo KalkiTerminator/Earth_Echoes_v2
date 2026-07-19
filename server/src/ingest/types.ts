@@ -19,8 +19,8 @@ export interface SpeciesRecord {
   status?: string | null;
   habitat?: string;
   habitatLabel?: string | null;
-  lat?: number;
-  lng?: number;
+  lat?: number | null;
+  lng?: number | null;
   yearExtinct?: number | null;
   population?: string | null;
   threats?: string[];
