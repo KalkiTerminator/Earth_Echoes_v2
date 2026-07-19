@@ -179,6 +179,12 @@ export async function runSpeciesIngest(input: {
       }
 
       const slug = slugify(record.name || record.scientific || nanoid());
+      // Coordinates are only kept when a source grounds them (never fabricated).
+      // A candidate without them stays in review — it cannot publish until a
+      // reviewer supplies a point — rather than plotting an invented location.
+      if (record.lat == null || record.lng == null) {
+        stats.notes.push(`${slug}: no grounded coordinates — set a location before publishing`);
+      }
       const [existing] = await db.select().from(schema.species).where(eq(schema.species.id, slug));
       const diff = computeDiff(record, existing as Record<string, unknown> | undefined);
 
