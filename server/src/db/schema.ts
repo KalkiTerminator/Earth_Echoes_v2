@@ -99,6 +99,7 @@ export const species = pgTable("species", {
   popCount: integer("pop_count"),
   help: jsonb("help").$type<string[]>(),
   audioUrl: text("audio_url"),
+  audioCredit: text("audio_credit"), // source/attribution shown to the reader
   sortOrder: integer("sort_order").default(0),
   published: boolean("published").notNull().default(true),
   // Provenance for agent-ingested rows (nullable → curated rows unaffected).

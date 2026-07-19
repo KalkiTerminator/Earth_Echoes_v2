@@ -42,6 +42,8 @@ export default function Takeover({ species, onClose, onPrev, onNext, onShare, bo
   const h = HABITATS[species.habitat];
   const sColor = statusColor(species.status);
   const hasRealAudio = !!species.audioUrl;
+  const audioCredit = species.audioCredit || null;
+  const isGenAudio = !!audioCredit && /ai-generated/i.test(audioCredit);
 
   // Play a real recording (species.audioUrl) if present; otherwise the existing
   // synthesized tone stands in.
@@ -152,7 +154,9 @@ export default function Takeover({ species, onClose, onPrev, onNext, onShare, bo
               {playing ? <Icons.Pause size={14} /> : <Icons.Volume size={14} />}
               <span className="mono text-[10px] sm:text-xs uppercase tracking-[0.18em]">
                 {hasRealAudio
-                  ? (playing ? "Playing — recording" : "Listen to recording")
+                  ? (isGenAudio
+                      ? (playing ? "Playing — AI-generated" : "Listen (AI-generated)")
+                      : (playing ? "Playing — recording" : "Listen to recording"))
                   : (playing ? "Playing — Ambient Simulation" : "Listen to Ambient Simulation")}
               </span>
             </button>
@@ -185,7 +189,7 @@ export default function Takeover({ species, onClose, onPrev, onNext, onShare, bo
                   }} />
                 ))}
               </div>
-              {hasRealAudio ? "Recording via Xeno-canto (CC)." : "Note: a synthesized tone stands in for species audio."}
+              {audioCredit || (hasRealAudio ? "Recording (CC)." : "Note: a synthesized tone stands in for species audio.")}
             </div>
           )}
         </div>

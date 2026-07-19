@@ -31,6 +31,7 @@ function shapeSpecies(row: any) {
   if (row.popCount != null) out.popCount = row.popCount;
   if (row.help) out.help = row.help;
   if (row.audioUrl) out.audioUrl = row.audioUrl;
+  if (row.audioCredit) out.audioCredit = row.audioCredit;
   return out;
 }
 

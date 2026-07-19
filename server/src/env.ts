@@ -72,6 +72,12 @@ export const env = {
     ncbiKey: process.env.NCBI_API_KEY || "",
     natureserveToken: process.env.NATURESERVE_TOKEN || "",
 
+    // Audio generation fallback (last resort when no real recording exists).
+    // Google has no animal-call generator, so this uses ElevenLabs Sound
+    // Effects; absent key → generation is simply skipped.
+    elevenLabsKey: process.env.ELEVENLABS_API_KEY || "",
+    audioModel: process.env.INGEST_AUDIO_MODEL || "",
+
     // Scrape-only enrichment via MCP (owner has Apify + Firecrawl credits).
     firecrawlMcpUrl: process.env.FIRECRAWL_MCP_URL || "",
     firecrawlKey: process.env.FIRECRAWL_API_KEY || "",
