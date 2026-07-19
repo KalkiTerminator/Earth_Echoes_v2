@@ -36,7 +36,7 @@ export interface SynthInput {
 const SYSTEM = `You reconcile multi-source biodiversity data into ONE accurate species record for a public extinction atlas.
 RULES:
 1. Every hard fact (status, lat, lng, yearExtinct, threats, population) MUST come from a provided source — never invent one. If all sources lack it, set it null.
-2. When sources conflict, prefer the more authoritative one (status: IUCN > GBIF > iNaturalist > Wikidata; coordinates: GBIF) and reflect that choice.
+2. COMBINE complementary details across sources into the fullest accurate record; only when sources directly CONFLICT on the same fact, prefer the more authoritative one (status: IUCN > GBIF > iNaturalist > Wikidata; coordinates: GBIF) and reflect that choice.
 3. "description" may be evocative prose but every claim must be supported by the sources.
 4. "habitat" MUST be exactly one of the allowed habitat ids given in the prompt.
 5. Fill "provenance" with the source id backing each hard field and a 0..1 confidence.`;

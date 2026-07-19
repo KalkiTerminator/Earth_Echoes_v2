@@ -28,7 +28,7 @@ validated `publish()` → new snapshot.
 | Conservation status/threats | **IUCN Red List**, iNaturalist, Wikidata, **EDGE** (uniqueness) | IUCN token; EDGE via Firecrawl |
 | Coordinates | GBIF occurrences, **OBIS** (marine), iNaturalist (open obs) | none |
 | Description/media | Wikimedia, iNaturalist, Wikidata | none (UA required) |
-| Audio | Xeno-canto (real recordings) | none |
+| Audio | Xeno-canto → iNaturalist sounds → Wikimedia Commons → **generate** | none (gen: ElevenLabs key) |
 | Scrape enrichment | Firecrawl / Apify (MCP) | keys, optional |
 
 Coordinates now cross-check three authorities (GBIF + OBIS marine + open iNat
@@ -37,6 +37,14 @@ Life adds an authoritative name backbone (set `INGEST_COL_DATASET` to the curren
 COL release to enable; unset → skipped). EDGE of Existence adds an evolutionary-
 distinctiveness grounding signal via the Firecrawl MCP tier (no-op unless
 Firecrawl is configured). Remaining directory sources are staged for later phases.
+
+**Audio** is resolved in priority order — a real recording always wins: Xeno-canto,
+then iNaturalist observation sounds, then Wikimedia Commons audio (all open, no key).
+Only if none exists anywhere **and** `ELEVENLABS_API_KEY` is set is a call generated
+(the synthesis LLM writes a sound prompt → ElevenLabs renders it). Every clip carries
+an `audioCredit` shown to the reader: real ones cite the archive + recordist + license;
+generated ones read "AI-generated … not a real recording". Macaulay / British Library /
+Animal Sound Archive are scrape-only/restricted and deferred to the Firecrawl tier.
 
 ## LLMs — all on Google Vertex AI (one credit pool)
 
@@ -81,6 +89,8 @@ INGEST_CONTACT_EMAIL  = you@example.org   # sent in the User-Agent (polite)
 EBIRD_TOKEN, FLICKR_API_KEY, UNSPLASH_ACCESS_KEY, NCBI_API_KEY, NATURESERVE_TOKEN
 FIRECRAWL_MCP_URL + FIRECRAWL_API_KEY     # scrape-only enrichment via MCP
 APIFY_MCP_URL + APIFY_TOKEN
+ELEVENLABS_API_KEY   # audio generation fallback when no real recording exists
+INGEST_AUDIO_MODEL   # optional ElevenLabs SFX model id override
 ```
 
 **Cost guardrails (US cents):**

@@ -8,8 +8,10 @@ import { and, eq, inArray, lt } from "drizzle-orm";
 import { db, schema } from "../db/client.js";
 import { getJson } from "./http.js";
 import { gather } from "./resolvers/index.js";
+import { resolveAudio } from "./audio.js";
 import { synthValidateLoop } from "./llm/loop.js";
 import { generateSpeciesImage } from "./llm/media.js";
+import { generateSpeciesAudio } from "./llm/audio.js";
 import { llmConfigured } from "./llm/provider.js";
 import { promoteCandidate } from "./promote.js";
 import { RunBudget, hasMonthlyHeadroom } from "./budget.js";
@@ -147,11 +149,20 @@ export async function runSpeciesIngest(input: {
       );
       const record = loop.record;
 
-      // Audio: a real recording from Xeno-canto if one exists (deterministic —
-      // never LLM-synthesized). Extinct species usually have none → the viewer
-      // falls back to generative habitat ambience.
+      // Audio: prefer a real recording, tried in priority order (Xeno-canto →
+      // iNaturalist sounds → Wikimedia Commons). If none exists anywhere and
+      // generation is configured, synthesize a call (Gemini prompt → ElevenLabs)
+      // — ALWAYS disclosed to the reader via audioCredit. Xeno-canto was already
+      // fetched during gather; pass it in to avoid a duplicate call.
       const xc = g.results.find((r) => r.provider === "xenocanto" && r.ok);
-      if (xc?.fields.audioUrl) record.audioUrl = xc.fields.audioUrl;
+      const audio = await resolveAudio(query, xc ? { url: xc.fields.audioUrl, credit: xc.fields.audioCredit } : null);
+      if (audio) {
+        record.audioUrl = audio.url;
+        record.audioCredit = audio.credit;
+      } else {
+        const gen = await generateSpeciesAudio(record, budget, input.triggeredBy ?? undefined);
+        if (gen) { record.audioUrl = gen.url; record.audioCredit = gen.credit; }
+      }
 
       // Media for gaps: generate an illustration only when no photo was found.
       if (!record.imageRemote && !record.imageUrl) {

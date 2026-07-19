@@ -32,10 +32,11 @@ export async function fetchXenoCanto(q: SpeciesQuery): Promise<ConnectorResult<u
     const { data } = await getJson<XcResp>(url, { provider: "xenocanto" });
     const rec = data.recordings?.find((r) => r.file) ?? undefined;
     if (!rec?.file) return { provider: "xenocanto", ok: false, fields: {}, raw: data, error: "no recording" };
+    const credit = `Xeno-canto${rec.rec ? ` — ${rec.rec}` : ""}${rec.lic ? " (CC)" : ""}`;
     return {
       provider: "xenocanto",
       ok: true,
-      fields: { audioUrl: absolutize(rec.file) },
+      fields: { audioUrl: absolutize(rec.file), audioCredit: credit },
       raw: rec,
       sourceUrl: rec.url ? absolutize(rec.url) : "https://xeno-canto.org/",
     };

@@ -8,7 +8,8 @@ export type ProviderId =
   | "gbif" | "iucn" | "wikimedia" | "inaturalist" | "wikidata"
   | "obis" | "ebird" | "catalogueoflife" | "xenocanto"
   | "openai" | "deepseek" | "gemini"
-  | "firecrawl" | "apify" | "edge";
+  | "firecrawl" | "apify" | "edge"
+  | "commons" | "elevenlabs";
 
 // The proposed public species record (subset of the DB/frontend contract).
 export interface SpeciesRecord {
@@ -32,6 +33,7 @@ export interface SpeciesRecord {
   popCount?: number | null;
   help?: string[] | null;
   audioUrl?: string | null;
+  audioCredit?: string | null;
 }
 
 // Result of a single connector call.

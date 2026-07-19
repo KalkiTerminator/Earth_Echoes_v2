@@ -91,6 +91,7 @@ export async function seed(): Promise<{ version: number; count: number }> {
       popCount: s.popCount ?? null,
       help: s.help ?? null,
       audioUrl: s.audioUrl ?? null,
+      audioCredit: s.audioCredit ?? null,
       sortOrder: order++,
       published: true,
     };
