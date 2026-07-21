@@ -22,14 +22,14 @@ validated `publish()` → new snapshot.
 
 ## Data sources
 
-| Domain | Sources | Auth |
+| Domain | Sources (≥3 combined) | Auth |
 |---|---|---|
-| Taxonomy/identity | GBIF, **Catalogue of Life**, iNaturalist, Wikidata | none (CoL: release key) |
-| Conservation status/threats | **IUCN Red List**, iNaturalist, Wikidata, **EDGE** (uniqueness) | IUCN token; EDGE via Firecrawl |
+| Taxonomy/identity | GBIF, **Catalogue of Life**, **ITIS**, iNaturalist, Wikidata | none (CoL: release key) |
+| Conservation status/threats | **IUCN Red List**, **Species+ (CITES/CMS)**, iNaturalist, Wikidata, **EDGE**, **WWF LPI**, **BioTime** | IUCN + Species+ tokens; the rest via Firecrawl |
 | Coordinates | GBIF occurrences, **OBIS** (marine), iNaturalist (open obs) | none |
-| Description/media | Wikimedia, iNaturalist, Wikidata | none (UA required) |
+| Description/media | Wikimedia, iNaturalist, **Flickr** (CC), Wikidata | none (UA); Flickr key |
 | Audio | Xeno-canto → iNaturalist sounds → Wikimedia Commons → **generate** | none (gen: ElevenLabs key) |
-| Scrape enrichment | Firecrawl / Apify (MCP) | keys, optional |
+| Scrape enrichment | Firecrawl (scrape, EDGE, WWF LPI, BioTime) / Apify (configured actor) | keys, optional |
 
 Coordinates now cross-check three authorities (GBIF + OBIS marine + open iNat
 observations; obscured points for threatened taxa are never used). Catalogue of
@@ -85,6 +85,9 @@ GOOGLE_VERTEX_ANTHROPIC_LOCATION    = us-east5
 ```
 INGEST_COL_DATASET    = <current Catalogue of Life release key on ChecklistBank>
 IUCN_TOKEN            = <free non-commercial token, api.iucnredlist.org>
+SPECIESPLUS_TOKEN     = <free token, api.speciesplus.net — CITES/CMS legal status>
+FLICKR_API_KEY        = <free key, flickr.com/services/api — CC images>
+APIFY_ACTOR           = <the Apify actor/tool the enrichment connector runs>
 INGEST_CONTACT_EMAIL  = you@example.org   # sent in the User-Agent (polite)
 EBIRD_TOKEN, FLICKR_API_KEY, UNSPLASH_ACCESS_KEY, NCBI_API_KEY, NATURESERVE_TOKEN
 FIRECRAWL_MCP_URL + FIRECRAWL_API_KEY     # scrape-only enrichment via MCP

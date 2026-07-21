@@ -66,6 +66,7 @@ export const env = {
 
     // Source tokens for the direct-HTTP connectors (free-but-registered).
     iucnToken: process.env.IUCN_TOKEN || "",
+    speciesPlusToken: process.env.SPECIESPLUS_TOKEN || "",
     ebirdToken: process.env.EBIRD_TOKEN || "",
     flickrKey: process.env.FLICKR_API_KEY || "",
     unsplashKey: process.env.UNSPLASH_ACCESS_KEY || "",
@@ -83,6 +84,8 @@ export const env = {
     firecrawlKey: process.env.FIRECRAWL_API_KEY || "",
     apifyMcpUrl: process.env.APIFY_MCP_URL || "",
     apifyToken: process.env.APIFY_TOKEN || "",
+    // Apify actor/tool the enrichment connector runs (varies by your Apify account).
+    apifyActor: process.env.APIFY_ACTOR || "",
 
     // Cost guardrails (US cents). A run aborts if it would exceed perRunCents;
     // scheduling is disabled once the month's spend crosses monthlyCents.
