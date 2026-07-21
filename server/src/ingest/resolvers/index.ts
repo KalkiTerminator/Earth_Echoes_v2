@@ -13,6 +13,12 @@ import { fetchScrape } from "../sources/scrape.js";
 import { fetchObis } from "../sources/obis.js";
 import { fetchCatalogueOfLife } from "../sources/catalogueoflife.js";
 import { fetchEdge } from "../sources/edge.js";
+import { fetchSpeciesPlus } from "../sources/speciesplus.js";
+import { fetchItis } from "../sources/itis.js";
+import { fetchFlickr } from "../sources/flickr.js";
+import { fetchWwfLpi } from "../sources/wwflpi.js";
+import { fetchBioTime } from "../sources/biotime.js";
+import { fetchApify } from "../sources/apify.js";
 import type {
   ConnectorResult, FieldCandidate, ResolvedField, ResolverBundle, SpeciesQuery, SpeciesRecord,
 } from "../types.js";
@@ -102,18 +108,24 @@ export async function gather(query: SpeciesQuery): Promise<GatherResult> {
     fetchXenoCanto(q),
     fetchObis(q), // marine/aquatic coordinate authority
     fetchCatalogueOfLife(q), // authoritative taxonomy backbone (skips unless configured)
+    fetchItis(q), // government-backed taxonomy cross-check (keyless)
+    fetchSpeciesPlus(q), // CITES/CMS legal-protection status (skips unless keyed)
+    fetchFlickr(q), // CC image source (skips unless keyed)
     fetchScrape(q), // Firecrawl MCP enrichment — no-op unless configured
     fetchEdge(q), // EDGE uniqueness grounding via Firecrawl — no-op unless configured
+    fetchWwfLpi(q), // WWF LPI population-trend grounding via Firecrawl — no-op unless configured
+    fetchBioTime(q), // BioTime time-series grounding via Firecrawl — no-op unless configured
+    fetchApify(q), // configured Apify actor enrichment — no-op unless configured
   ]);
 
   const byId = Object.fromEntries(results.map((r) => [r.provider, r])) as Record<string, ConnectorResult>;
   const pick = (...ids: string[]) => ids.map((id) => byId[id]).filter(Boolean);
 
   const bundles: ResolverBundle[] = [
-    bundle("taxonomy", pick("gbif", "catalogueoflife", "inaturalist", "wikidata"), ["name", "scientific"]),
-    bundle("status", pick("iucn", "inaturalist", "wikidata", "edge"), ["status", "population", "threats"]),
+    bundle("taxonomy", pick("gbif", "catalogueoflife", "itis", "inaturalist", "wikidata"), ["name", "scientific"]),
+    bundle("status", pick("iucn", "speciesplus", "inaturalist", "wikidata", "edge", "wwflpi", "biotime", "apify"), ["status", "population", "threats"]),
     bundle("coordinates", pick("gbif", "obis", "inaturalist"), ["lat", "lng"]),
-    bundle("media", pick("wikimedia", "inaturalist", "wikidata"), ["imageRemote", "description"]),
+    bundle("media", pick("wikimedia", "inaturalist", "flickr", "wikidata"), ["imageRemote", "description"]),
     bundle("audio", pick("xenocanto"), ["audioUrl"]),
   ];
 

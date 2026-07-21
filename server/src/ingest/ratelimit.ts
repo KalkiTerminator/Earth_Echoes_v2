@@ -24,6 +24,11 @@ const MIN_INTERVAL_MS: Partial<Record<ProviderId, number>> & { default: number }
   edge: 500,
   commons: 300,
   elevenlabs: 600,
+  speciesplus: 400,
+  itis: 400,
+  flickr: 300,
+  wwflpi: 500,
+  biotime: 500,
 };
 
 const lastAt: Partial<Record<ProviderId, number>> = {};

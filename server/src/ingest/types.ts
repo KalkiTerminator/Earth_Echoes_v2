@@ -9,7 +9,8 @@ export type ProviderId =
   | "obis" | "ebird" | "catalogueoflife" | "xenocanto"
   | "openai" | "deepseek" | "gemini"
   | "firecrawl" | "apify" | "edge"
-  | "commons" | "elevenlabs";
+  | "commons" | "elevenlabs"
+  | "speciesplus" | "itis" | "flickr" | "wwflpi" | "biotime";
 
 // The proposed public species record (subset of the DB/frontend contract).
 export interface SpeciesRecord {
